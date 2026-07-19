@@ -1,0 +1,122 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html, body, #root { height: 100%; }
+
+body {
+  background: #F7F8FB;
+  color: #1E2A5E;
+  font-family: 'Inter', sans-serif;
+}
+
+h1, h2, h3, .font-display {
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+/* ---- Ledger-tape money display: the signature element ---- */
+.ledger-amount {
+  font-family: 'JetBrains Mono', monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  border-bottom: 1.5px solid #E4E7F1;
+  display: inline-block;
+  padding-bottom: 2px;
+}
+.ledger-amount--lg {
+  font-size: 1.75rem;
+  border-bottom-width: 2px;
+  border-bottom-color: #D9A441;
+}
+
+/* ---- Shared components ---- */
+.card {
+  background: #fff;
+  border: 1px solid #E4E7F1;
+  border-radius: 12px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  border: 1px solid #E4E7F1;
+  background: #fff;
+  color: #374873;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+.btn:hover:not(:disabled) { background: #F7F8FB; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.btn-primary {
+  background: #1E2A5E;
+  border-color: #1E2A5E;
+  color: #fff;
+}
+.btn-primary:hover:not(:disabled) { background: #16204A; }
+
+.btn-accent {
+  background: #D9A441;
+  border-color: #D9A441;
+  color: #1E2A5E;
+}
+.btn-accent:hover:not(:disabled) { background: #B8842E; color: #fff; }
+
+.btn-sm { padding: 6px 10px; font-size: 12px; }
+
+.label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #6B7280;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.input {
+  width: 100%;
+  padding: 9px 12px;
+  border-radius: 8px;
+  border: 1px solid #E4E7F1;
+  background: #fff;
+  font-size: 14px;
+  color: #1E2A5E;
+  outline: none;
+  transition: all 150ms ease;
+}
+.input:focus {
+  border-color: #D9A441;
+  box-shadow: 0 0 0 3px rgba(217,164,65,0.15);
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30,42,94,0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+  padding: 16px;
+}
+.modal {
+  background: #fff;
+  border-radius: 14px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(30,42,94,0.25);
+}
+
+.badge {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
