@@ -23,13 +23,26 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
         style={{ background: '#1E2A5E' }}
       >
         <div className="px-5 py-6 flex items-center justify-between">
-          <div>
-            <h1 className="font-display font-bold text-lg text-white tracking-tight">
-              Stock<span style={{ color: '#D9A441' }}>Bill</span>
-            </h1>
-            <p className="text-[11px] mt-0.5" style={{ color: '#8291BE' }}>trade ledger, digitized</p>
+          <div className="flex items-center gap-3 min-w-0">
+            <div
+              className="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center font-display font-bold text-sm"
+              style={{ background: '#D9A441', color: '#1E2A5E' }}
+            >
+              DT
+            </div>
+            <div className="min-w-0">
+              <h1 className="font-display font-bold text-sm text-white tracking-tight truncate">
+                Deep Trading Co.
+              </h1>
+              <span
+                className="inline-block text-[10px] font-display font-semibold mt-0.5 px-1.5 py-0.5 rounded-full"
+                style={{ background: 'rgba(217,164,65,0.15)', color: '#D9A441' }}
+              >
+                StockBill
+              </span>
+            </div>
           </div>
-          <button className="md:hidden text-white/70 hover:text-white" onClick={onClose}>
+          <button className="md:hidden text-white/70 hover:text-white shrink-0" onClick={onClose}>
             <X size={20} />
           </button>
         </div>

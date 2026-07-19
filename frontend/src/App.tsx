@@ -24,13 +24,22 @@ function Shell() {
 
       <div className="md:hidden sticky top-0 z-30 flex items-center justify-between gap-3 px-4 py-3 border-b"
         style={{ background: '#1E2A5E', borderColor: '#2A386E' }}>
-        <div className="flex items-center gap-3">
-          <button className="text-white/80 hover:text-white" onClick={() => setSidebarOpen(true)}>
+        <div className="flex items-center gap-2.5 min-w-0">
+          <button className="text-white/80 hover:text-white shrink-0" onClick={() => setSidebarOpen(true)}>
             <Menu size={22} />
           </button>
-          <h1 className="font-display font-bold text-base text-white tracking-tight">
-            Stock<span style={{ color: '#D9A441' }}>Bill</span>
-          </h1>
+          <div
+            className="w-7 h-7 rounded-lg shrink-0 flex items-center justify-center font-display font-bold text-xs"
+            style={{ background: '#D9A441', color: '#1E2A5E' }}
+          >
+            DT
+          </div>
+          <div className="min-w-0">
+            <h1 className="font-display font-bold text-sm text-white tracking-tight truncate leading-tight">
+              Deep Trading Co.
+            </h1>
+            <span className="text-[10px]" style={{ color: '#8291BE' }}>StockBill</span>
+          </div>
         </div>
         <button className="text-white/80 hover:text-white" onClick={() => { logout(); location.href = '/login' }}>
           <LogOut size={18} />
