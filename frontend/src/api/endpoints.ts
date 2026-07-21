@@ -9,6 +9,7 @@ export const isLoggedIn = () => !!localStorage.getItem(TOKEN_KEY)
 // ---- Groups ----
 export const getGroupsApi = () => api.get('/groups').then(r => r.data.data)
 export const createGroupApi = (name: string) => api.post('/groups', { name }).then(r => r.data.data)
+export const deleteGroupApi = (id: string) => api.delete(`/groups/${id}`)
 
 // ---- Products ----
 export const getProductsApi = (groupId?: string, search?: string) =>
