@@ -37,8 +37,17 @@ router.put('/:id', asyncHandler(async (req, res) => {
 
 // DELETE /api/groups/:id
 router.delete('/:id', asyncHandler(async (req, res) => {
-  await prisma.billingGroup.delete({ where: { id: req.params.id } })
-  res.json({ success: true })
+  try {
+    await prisma.billingGroup.delete({ where: { id: req.params.id } })
+    res.json({ success: true })
+  } catch (err) {
+    if (err.code === 'P2025') { res.status(404); throw new Error('Group not found') }
+    if (err.code === 'P2003') {
+      res.status(409)
+      throw new Error('Is group mein products hain, isliye delete nahi ho sakta. Pehle isme se saare products delete karo ya kisi aur group mein move karo.')
+    }
+    throw err
+  }
 }))
 
 module.exports = router
