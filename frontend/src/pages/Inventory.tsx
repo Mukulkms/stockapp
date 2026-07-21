@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Plus, Pencil, Trash2, Check, X, Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { getGroupsApi, createGroupApi, getProductsApi, updateProductApi, deleteProductApi } from '../api/endpoints'
+import { getGroupsApi, createGroupApi, deleteGroupApi, getProductsApi, updateProductApi, deleteProductApi } from '../api/endpoints'
 import { BillingGroup, Product } from '../types'
 import Amount from '../components/Amount'
 import Pagination from '../components/Pagination'
@@ -24,6 +24,9 @@ export default function Inventory() {
 
   const [deleteTarget, setDeleteTarget] = useState<Product | null>(null)
   const [deleting, setDeleting] = useState(false)
+
+  const [deleteGroupTarget, setDeleteGroupTarget] = useState<BillingGroup | null>(null)
+  const [deletingGroup, setDeletingGroup] = useState(false)
 
   useEffect(() => {
     getGroupsApi().then(gs => {
@@ -51,6 +54,23 @@ export default function Inventory() {
       toast.success('Group ban gaya')
     } catch (e: any) {
       toast.error(e?.response?.data?.message || 'Group create nahi hua')
+    }
+  }
+
+  const confirmDeleteGroup = async () => {
+    if (!deleteGroupTarget) return
+    setDeletingGroup(true)
+    try {
+      await deleteGroupApi(deleteGroupTarget.id)
+      toast.success('Group delete ho gaya')
+      const remaining = groups.filter(g => g.id !== deleteGroupTarget.id)
+      setGroups(remaining)
+      if (activeGroup === deleteGroupTarget.id) setActiveGroup(remaining[0]?.id || '')
+      setDeleteGroupTarget(null)
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || 'Group delete nahi hua')
+    } finally {
+      setDeletingGroup(false)
     }
   }
 
@@ -140,7 +160,7 @@ export default function Inventory() {
           <button
             key={g.id}
             onClick={() => setActiveGroup(g.id)}
-            className="px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            className="group px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
             style={
               activeGroup === g.id
                 ? { background: '#1E2A5E', color: '#fff' }
@@ -148,6 +168,13 @@ export default function Inventory() {
             }
           >
             {g.name} <span className="opacity-60">({g._count?.products ?? 0})</span>
+            <span
+              onClick={e => { e.stopPropagation(); setDeleteGroupTarget(g) }}
+              className="opacity-50 hover:opacity-100"
+              style={{ lineHeight: 0 }}
+            >
+              <X size={13} />
+            </span>
           </button>
         ))}
       </div>
@@ -272,6 +299,29 @@ export default function Inventory() {
           </div>
         </div>
       )}
+      {/* Delete group confirm */}
+      {deleteGroupTarget && (
+        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ background: 'rgba(30,42,94,0.4)' }}>
+          <div className="card p-5 w-full max-w-sm" style={{ background: '#fff' }}>
+            <h3 className="font-display font-semibold text-base mb-2">Group delete karein?</h3>
+            <p className="text-sm text-gray-500 mb-5">
+              "{deleteGroupTarget.name}" permanently delete ho jayega. Agar isme products hain to delete fail hoga — pehle unhe hatana/move karna hoga.
+            </p>
+            <div className="flex gap-2 justify-end">
+              <button className="btn" onClick={() => setDeleteGroupTarget(null)} disabled={deletingGroup}>Cancel</button>
+              <button
+                className="btn"
+                style={{ borderColor: '#D9534F', color: '#fff', background: '#D9534F' }}
+                onClick={confirmDeleteGroup}
+                disabled={deletingGroup}
+              >
+                {deletingGroup ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
-}
+                              }
