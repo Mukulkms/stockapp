@@ -89,8 +89,8 @@ export default function Dashboard() {
                 className="text-left p-4 rounded-lg border transition-colors"
                 style={
                   activeGroupFilter === g.id
-                    ? { background: '#1E2A5E', borderColor: '#1E2A5E', color: '#fff' }
-                    : { background: '#FAFBFF', borderColor: '#E4E7F1', color: '#1E2A5E' }
+                    ? { background: '#1B2540', borderColor: '#1B2540', color: '#fff' }
+                    : { background: '#F8F9FC', borderColor: '#E2E5ED', color: '#1B2540' }
                 }
               >
                 <div className="flex items-center justify-between mb-2">
@@ -108,7 +108,7 @@ export default function Dashboard() {
       </div>
 
       <div className="card overflow-hidden mb-8">
-        <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 flex-wrap gap-2" style={{ borderBottom: '1px solid #E4E7F1' }}>
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 flex-wrap gap-2" style={{ borderBottom: '1px solid #E2E5ED' }}>
           <h3 className="font-display font-semibold text-sm">
             Item-wise stock {activeGroupFilter !== 'all' && `— ${groupBreakdown.find(g => g.id === activeGroupFilter)?.name}`}
           </h3>
@@ -119,7 +119,7 @@ export default function Dashboard() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[560px]">
             <thead>
-              <tr style={{ background: '#F7F8FB', borderBottom: '1px solid #E4E7F1' }}>
+              <tr style={{ background: '#F5F6FA', borderBottom: '1px solid #E2E5ED' }}>
                 <th className="text-left px-4 sm:px-5 py-2.5 font-medium text-gray-500">Product</th>
                 <th className="text-left px-4 sm:px-5 py-2.5 font-medium text-gray-500">Group</th>
                 <th className="text-left px-4 sm:px-5 py-2.5 font-medium text-gray-500">Unit</th>
@@ -129,14 +129,14 @@ export default function Dashboard() {
             </thead>
             <tbody>
               {pageItems.map(p => (
-                <tr key={p.id} style={{ borderBottom: '1px solid #F0F1F8' }}>
+                <tr key={p.id} style={{ borderBottom: '1px solid #EEF0F6' }}>
                   <td className="px-4 sm:px-5 py-2.5 font-medium">{p.name}</td>
                   <td className="px-4 sm:px-5 py-2.5 text-gray-500">{p.group?.name || '—'}</td>
                   <td className="px-4 sm:px-5 py-2.5 text-gray-500">{p.unit}</td>
                   <td className="px-4 sm:px-5 py-2.5">
                     <span className="badge" style={{
-                      background: p.stockQty <= 5 ? '#FEF2F2' : '#F0FDF4',
-                      color: p.stockQty <= 5 ? '#DC2626' : '#0F9D58'
+                      background: p.stockQty <= 5 ? '#FEF2F2' : '#EDFBF6',
+                      color: p.stockQty <= 5 ? '#DC2626' : '#0E7C6B'
                     }}>
                       {p.stockQty} {p.unit}
                     </span>
@@ -160,7 +160,7 @@ export default function Dashboard() {
           <h3 className="font-display font-semibold text-sm mb-4">Recent purchases</h3>
           <div className="space-y-3">
             {purchases.slice(0, 6).map(inv => (
-              <div key={inv.id} className="flex items-center justify-between text-sm pb-3 gap-3" style={{ borderBottom: '1px solid #F0F1F8' }}>
+              <div key={inv.id} className="flex items-center justify-between text-sm pb-3 gap-3" style={{ borderBottom: '1px solid #EEF0F6' }}>
                 <div className="min-w-0">
                   <p className="font-medium truncate">{inv.vendorName || 'Unknown vendor'}</p>
                   <p className="text-xs text-gray-500 truncate">{inv.invoiceNumber || '—'} · {inv.billDate.split('T')[0]}</p>
@@ -176,7 +176,7 @@ export default function Dashboard() {
           <h3 className="font-display font-semibold text-sm mb-4">Low stock alert</h3>
           <div className="space-y-3">
             {lowStock.slice(0, 6).map(p => (
-              <div key={p.id} className="flex items-center justify-between text-sm pb-3 gap-3" style={{ borderBottom: '1px solid #F0F1F8' }}>
+              <div key={p.id} className="flex items-center justify-between text-sm pb-3 gap-3" style={{ borderBottom: '1px solid #EEF0F6' }}>
                 <div className="min-w-0">
                   <p className="font-medium truncate">{p.name}</p>
                   <p className="text-xs text-gray-500 truncate">{p.group?.name}</p>

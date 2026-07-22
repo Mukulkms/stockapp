@@ -2,6 +2,7 @@ const express = require('express')
 const prisma = require('../lib/prisma')
 const { asyncHandler } = require('../middleware/common')
 const { calcSellingPrice } = require('../utils/pricing')
+const { assertNonNegative } = require('../utils/validation')
 
 const router = express.Router()
 
@@ -35,6 +36,7 @@ router.post('/', asyncHandler(async (req, res) => {
   const { name, groupId, unit, costPrice, marginPercent, marginFlat, stockQty } = req.body
   if (!name?.trim()) { res.status(400); throw new Error('Product name required') }
   if (!groupId) { res.status(400); throw new Error('groupId required') }
+  assertNonNegative(res, req.body, ['costPrice', 'marginPercent', 'marginFlat', 'stockQty'])
 
   const sellingPrice = calcSellingPrice(costPrice, marginPercent, marginFlat)
 
@@ -59,6 +61,7 @@ router.put('/:id', asyncHandler(async (req, res) => {
 
   const existing = await prisma.product.findUnique({ where: { id: req.params.id } })
   if (!existing) { res.status(404); throw new Error('Product not found') }
+  assertNonNegative(res, req.body, ['costPrice', 'marginPercent', 'marginFlat', 'stockQty'])
 
   const finalCost = costPrice !== undefined ? Number(costPrice) : existing.costPrice
   const finalMarginPercent = marginPercent !== undefined ? Number(marginPercent) : existing.marginPercent

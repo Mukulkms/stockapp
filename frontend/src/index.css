@@ -5,8 +5,8 @@
 html, body, #root { height: 100%; }
 
 body {
-  background: #F7F8FB;
-  color: #1E2A5E;
+  background: #F5F6FA;
+  color: #1B2540;
   font-family: 'Inter', sans-serif;
 }
 
@@ -20,20 +20,20 @@ h1, h2, h3, .font-display {
   font-variant-numeric: tabular-nums;
   font-weight: 600;
   letter-spacing: -0.02em;
-  border-bottom: 1.5px solid #E4E7F1;
+  border-bottom: 1.5px solid #E2E5ED;
   display: inline-block;
   padding-bottom: 2px;
 }
 .ledger-amount--lg {
   font-size: 1.75rem;
   border-bottom-width: 2px;
-  border-bottom-color: #D9A441;
+  border-bottom-color: #B5702F;
 }
 
 /* ---- Shared components ---- */
 .card {
   background: #fff;
-  border: 1px solid #E4E7F1;
+  border: 1px solid #E2E5ED;
   border-radius: 12px;
 }
 
@@ -45,35 +45,35 @@ h1, h2, h3, .font-display {
   border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
-  border: 1px solid #E4E7F1;
+  border: 1px solid #E2E5ED;
   background: #fff;
-  color: #374873;
+  color: #3A4566;
   cursor: pointer;
   transition: all 150ms ease;
 }
-.btn:hover:not(:disabled) { background: #F7F8FB; }
+.btn:hover:not(:disabled) { background: #F5F6FA; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
 .btn-primary {
-  background: #1E2A5E;
-  border-color: #1E2A5E;
+  background: #1B2540;
+  border-color: #1B2540;
   color: #fff;
 }
-.btn-primary:hover:not(:disabled) { background: #16204A; }
+.btn-primary:hover:not(:disabled) { background: #12192F; }
 
 .btn-accent {
-  background: #D9A441;
-  border-color: #D9A441;
-  color: #1E2A5E;
+  background: #B5702F;
+  border-color: #B5702F;
+  color: #1B2540;
 }
-.btn-accent:hover:not(:disabled) { background: #B8842E; color: #fff; }
+.btn-accent:hover:not(:disabled) { background: #8C561F; color: #fff; }
 
 .btn-sm { padding: 6px 10px; font-size: 12px; }
 
 .label {
   font-size: 12px;
   font-weight: 500;
-  color: #6B7280;
+  color: #64748B;
   margin-bottom: 6px;
   display: block;
 }
@@ -82,22 +82,22 @@ h1, h2, h3, .font-display {
   width: 100%;
   padding: 9px 12px;
   border-radius: 8px;
-  border: 1px solid #E4E7F1;
+  border: 1px solid #E2E5ED;
   background: #fff;
   font-size: 14px;
-  color: #1E2A5E;
+  color: #1B2540;
   outline: none;
   transition: all 150ms ease;
 }
 .input:focus {
-  border-color: #D9A441;
-  box-shadow: 0 0 0 3px rgba(217,164,65,0.15);
+  border-color: #B5702F;
+  box-shadow: 0 0 0 3px rgba(181,112,47,0.15);
 }
 
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(30,42,94,0.35);
+  background: rgba(27,37,64,0.35);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -108,7 +108,7 @@ h1, h2, h3, .font-display {
   background: #fff;
   border-radius: 14px;
   width: 100%;
-  box-shadow: 0 20px 60px rgba(30,42,94,0.25);
+  box-shadow: 0 20px 60px rgba(27,37,64,0.25);
 }
 
 .badge {

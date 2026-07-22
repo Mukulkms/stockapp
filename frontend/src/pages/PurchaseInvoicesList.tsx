@@ -148,7 +148,7 @@ export default function PurchaseInvoicesList() {
       <div className="flex items-center justify-between mb-1 gap-3 flex-wrap">
         <h2 className="font-display font-semibold text-2xl">Purchase Invoices</h2>
         {selected.size > 0 && (
-          <button className="btn" style={{ borderColor: '#D9534F', color: '#D9534F' }}
+          <button className="btn" style={{ borderColor: '#DC2626', color: '#DC2626' }}
             onClick={() => setBulkDeleteOpen(true)} disabled={busyDelete}>
             {busyDelete ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
             Delete selected ({selected.size})
@@ -166,7 +166,7 @@ export default function PurchaseInvoicesList() {
           <div className="overflow-x-auto">
             <table className="w-full text-sm min-w-[720px]">
               <thead>
-                <tr style={{ background: '#F7F8FB', borderBottom: '1px solid #E4E7F1' }}>
+                <tr style={{ background: '#F5F6FA', borderBottom: '1px solid #E2E5ED' }}>
                   <th className="px-4 py-2.5"><input type="checkbox" checked={allSelected} onChange={toggleAll} /></th>
                   <th className="text-left px-4 py-2.5 font-medium text-gray-500">Date</th>
                   <th className="text-left px-4 py-2.5 font-medium text-gray-500">Vendor</th>
@@ -179,7 +179,7 @@ export default function PurchaseInvoicesList() {
               </thead>
               <tbody>
                 {pageItems.map(inv => (
-                  <tr key={inv.id} style={{ borderBottom: '1px solid #F0F1F8' }}>
+                  <tr key={inv.id} style={{ borderBottom: '1px solid #EEF0F6' }}>
                     <td className="px-4 py-2"><input type="checkbox" checked={selected.has(inv.id)} onChange={() => toggleOne(inv.id)} /></td>
                     <td className="px-4 py-2">{new Date(inv.billDate).toLocaleDateString('en-IN')}</td>
                     <td className="px-4 py-2">{inv.vendorName || '—'}</td>
@@ -191,7 +191,7 @@ export default function PurchaseInvoicesList() {
                       <div className="flex gap-2">
                         <button className="btn btn-sm" onClick={() => setViewing(inv)}><Eye size={13} /></button>
                         <button className="btn btn-sm" onClick={() => openEdit(inv)}><Pencil size={13} /></button>
-                        <button className="btn btn-sm" style={{ color: '#D9534F' }} onClick={() => setDeleteTarget(inv.id)}><Trash2 size={13} /></button>
+                        <button className="btn btn-sm" style={{ color: '#DC2626' }} onClick={() => setDeleteTarget(inv.id)}><Trash2 size={13} /></button>
                       </div>
                     </td>
                   </tr>
@@ -205,7 +205,7 @@ export default function PurchaseInvoicesList() {
 
       {/* View (read-only) modal */}
       {viewing && (
-        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ background: 'rgba(30,42,94,0.4)' }}>
+        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ background: 'rgba(27,37,64,0.4)' }}>
           <div className="card p-5 sm:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto" style={{ background: '#fff' }}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-display font-semibold text-lg">Invoice details</h3>
@@ -225,7 +225,7 @@ export default function PurchaseInvoicesList() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm min-w-[420px]">
                   <thead>
-                    <tr style={{ background: '#F7F8FB', borderBottom: '1px solid #E4E7F1' }}>
+                    <tr style={{ background: '#F5F6FA', borderBottom: '1px solid #E2E5ED' }}>
                       <th className="text-left px-3 py-2 font-medium text-gray-500">Product</th>
                       <th className="text-left px-3 py-2 font-medium text-gray-500">Qty</th>
                       <th className="text-left px-3 py-2 font-medium text-gray-500">Cost</th>
@@ -234,7 +234,7 @@ export default function PurchaseInvoicesList() {
                   </thead>
                   <tbody>
                     {viewing.items.map(it => (
-                      <tr key={it.id} style={{ borderBottom: '1px solid #F0F1F8' }}>
+                      <tr key={it.id} style={{ borderBottom: '1px solid #EEF0F6' }}>
                         <td className="px-3 py-2">{it.product?.name || '—'}</td>
                         <td className="px-3 py-2">{it.qty} {it.product?.unit}</td>
                         <td className="px-3 py-2"><Amount value={it.costPrice} /></td>
@@ -256,7 +256,7 @@ export default function PurchaseInvoicesList() {
             {viewing.imageUrl && (
               <div className="mt-4">
                 <span className="label">Bill image</span>
-                <img src={viewing.imageUrl} alt="Invoice" className="rounded-lg border max-w-full" style={{ borderColor: '#E4E7F1' }} />
+                <img src={viewing.imageUrl} alt="Invoice" className="rounded-lg border max-w-full" style={{ borderColor: '#E2E5ED' }} />
               </div>
             )}
           </div>
@@ -265,7 +265,7 @@ export default function PurchaseInvoicesList() {
 
       {/* Edit modal */}
       {editing && (
-        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ background: 'rgba(30,42,94,0.4)' }}>
+        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ background: 'rgba(27,37,64,0.4)' }}>
           <div className="card p-5 sm:p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto" style={{ background: '#fff' }}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-display font-semibold text-lg">Edit Purchase Invoice</h3>
@@ -304,7 +304,7 @@ export default function PurchaseInvoicesList() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm min-w-[480px]">
                   <thead>
-                    <tr style={{ background: '#F7F8FB', borderBottom: '1px solid #E4E7F1' }}>
+                    <tr style={{ background: '#F5F6FA', borderBottom: '1px solid #E2E5ED' }}>
                       <th className="text-left px-3 py-2 font-medium text-gray-500">Product</th>
                       <th className="text-left px-3 py-2 font-medium text-gray-500">Qty</th>
                       <th className="text-left px-3 py-2 font-medium text-gray-500">Cost</th>
@@ -313,15 +313,15 @@ export default function PurchaseInvoicesList() {
                   </thead>
                   <tbody>
                     {editItems.map((it, i) => (
-                      <tr key={it.productId + i} style={{ borderBottom: '1px solid #F0F1F8' }}>
+                      <tr key={it.productId + i} style={{ borderBottom: '1px solid #EEF0F6' }}>
                         <td className="px-3 py-2">{it.name}</td>
                         <td className="px-3 py-2">
-                          <input className="input py-1.5 w-20" type="number" value={it.qty}
-                            onChange={e => updateEditItem(i, { qty: parseFloat(e.target.value) || 0 })} />
+                          <input className="input py-1.5 w-20" type="number" min={0} value={it.qty}
+                            onChange={e => updateEditItem(i, { qty: Math.max(0, parseFloat(e.target.value) || 0) })} />
                         </td>
                         <td className="px-3 py-2">
-                          <input className="input py-1.5 w-24" type="number" value={it.costPrice}
-                            onChange={e => updateEditItem(i, { costPrice: parseFloat(e.target.value) || 0 })} />
+                          <input className="input py-1.5 w-24" type="number" min={0} value={it.costPrice}
+                            onChange={e => updateEditItem(i, { costPrice: Math.max(0, parseFloat(e.target.value) || 0) })} />
                         </td>
                         <td className="px-3 py-2">
                           <button className="btn btn-sm" onClick={() => removeEditItem(i)}><Trash2 size={13} /></button>
@@ -341,19 +341,19 @@ export default function PurchaseInvoicesList() {
               </div>
               <div>
                 <label className="label">Discount / Less</label>
-                <input className="input" type="number" value={editFields.discountAmount}
-                  onChange={e => setEditFields({ ...editFields, discountAmount: parseFloat(e.target.value) || 0 })} />
+                <input className="input" type="number" min={0} value={editFields.discountAmount}
+                  onChange={e => setEditFields({ ...editFields, discountAmount: Math.max(0, parseFloat(e.target.value) || 0) })} />
               </div>
               <div>
                 <label className="label">Tax / GST amount</label>
-                <input className="input" type="number" value={editFields.taxAmount}
-                  onChange={e => setEditFields({ ...editFields, taxAmount: parseFloat(e.target.value) || 0 })} />
+                <input className="input" type="number" min={0} value={editFields.taxAmount}
+                  onChange={e => setEditFields({ ...editFields, taxAmount: Math.max(0, parseFloat(e.target.value) || 0) })} />
               </div>
             </div>
             <div className="mb-5">
               <label className="label">Actual bill amount (final, editable)</label>
-              <input className="input font-medium" type="number" value={editFields.totalAmount}
-                onChange={e => setEditFields({ ...editFields, totalAmount: parseFloat(e.target.value) || 0 })} />
+              <input className="input font-medium" type="number" min={0} value={editFields.totalAmount}
+                onChange={e => setEditFields({ ...editFields, totalAmount: Math.max(0, parseFloat(e.target.value) || 0) })} />
             </div>
 
             <div className="flex gap-2 justify-end">

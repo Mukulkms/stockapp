@@ -94,10 +94,10 @@ export default function Inventory() {
       const updated = await updateProductApi(editing.id, {
         name: editFields.name.trim(),
         unit: editFields.unit || 'pcs',
-        costPrice: parseFloat(editFields.costPrice) || 0,
-        marginPercent: parseFloat(editFields.marginPercent) || 0,
+        costPrice: Math.max(0, parseFloat(editFields.costPrice) || 0),
+        marginPercent: Math.max(0, parseFloat(editFields.marginPercent) || 0),
         marginFlat: null,
-        stockQty: parseFloat(editFields.stockQty) || 0
+        stockQty: Math.max(0, parseFloat(editFields.stockQty) || 0)
       })
       setProducts(prev => prev.map(x => x.id === editing.id ? updated : x))
       toast.success('Product update ho gaya')
@@ -163,8 +163,8 @@ export default function Inventory() {
             className="group px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
             style={
               activeGroup === g.id
-                ? { background: '#1E2A5E', color: '#fff' }
-                : { background: '#fff', color: '#374873', border: '1px solid #E4E7F1' }
+                ? { background: '#1B2540', color: '#fff' }
+                : { background: '#fff', color: '#3A4566', border: '1px solid #E2E5ED' }
             }
           >
             {g.name} <span className="opacity-60">({g._count?.products ?? 0})</span>
@@ -183,7 +183,7 @@ export default function Inventory() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[760px]">
             <thead>
-              <tr style={{ background: '#F7F8FB', borderBottom: '1px solid #E4E7F1' }}>
+              <tr style={{ background: '#F5F6FA', borderBottom: '1px solid #E2E5ED' }}>
                 <th className="text-left px-5 py-3 font-medium text-gray-500">Product</th>
                 <th className="text-left px-5 py-3 font-medium text-gray-500">Unit</th>
                 <th className="text-left px-5 py-3 font-medium text-gray-500">Cost price</th>
@@ -195,7 +195,7 @@ export default function Inventory() {
             </thead>
             <tbody>
               {pageItems.map(p => (
-                <tr key={p.id} style={{ borderBottom: '1px solid #F0F1F8' }}>
+                <tr key={p.id} style={{ borderBottom: '1px solid #EEF0F6' }}>
                   <td className="px-5 py-3 font-medium">{p.name}</td>
                   <td className="px-5 py-3 text-gray-500">{p.unit}</td>
                   <td className="px-5 py-3"><Amount value={p.costPrice} /></td>
@@ -203,8 +203,8 @@ export default function Inventory() {
                   <td className="px-5 py-3"><Amount value={p.sellingPrice} /></td>
                   <td className="px-5 py-3">
                     <span className="badge" style={{
-                      background: p.stockQty <= 5 ? '#FEF2F2' : '#F0FDF4',
-                      color: p.stockQty <= 5 ? '#DC2626' : '#0F9D58'
+                      background: p.stockQty <= 5 ? '#FEF2F2' : '#EDFBF6',
+                      color: p.stockQty <= 5 ? '#DC2626' : '#0E7C6B'
                     }}>
                       {p.stockQty} {p.unit}
                     </span>
@@ -212,7 +212,7 @@ export default function Inventory() {
                   <td className="px-5 py-3">
                     <div className="flex gap-2 justify-end">
                       <button className="btn btn-sm" onClick={() => openEdit(p)}><Pencil size={13} /></button>
-                      <button className="btn btn-sm" style={{ color: '#D9534F' }} onClick={() => setDeleteTarget(p)}><Trash2 size={13} /></button>
+                      <button className="btn btn-sm" style={{ color: '#DC2626' }} onClick={() => setDeleteTarget(p)}><Trash2 size={13} /></button>
                     </div>
                   </td>
                 </tr>
@@ -230,7 +230,7 @@ export default function Inventory() {
 
       {/* Edit modal */}
       {editing && (
-        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ background: 'rgba(30,42,94,0.4)' }}>
+        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ background: 'rgba(27,37,64,0.4)' }}>
           <div className="card p-5 sm:p-6 w-full max-w-md" style={{ background: '#fff' }}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-display font-semibold text-lg">Edit product</h3>
@@ -250,17 +250,17 @@ export default function Inventory() {
               </div>
               <div>
                 <label className="label">Stock qty</label>
-                <input className="input" type="number" value={editFields.stockQty}
+                <input className="input" type="number" min={0} value={editFields.stockQty}
                   onChange={e => setEditFields({ ...editFields, stockQty: e.target.value })} />
               </div>
               <div>
                 <label className="label">Cost price</label>
-                <input className="input" type="number" value={editFields.costPrice}
+                <input className="input" type="number" min={0} value={editFields.costPrice}
                   onChange={e => setEditFields({ ...editFields, costPrice: e.target.value })} />
               </div>
               <div>
                 <label className="label">Margin %</label>
-                <input className="input" type="number" value={editFields.marginPercent}
+                <input className="input" type="number" min={0} value={editFields.marginPercent}
                   onChange={e => setEditFields({ ...editFields, marginPercent: e.target.value })} />
               </div>
             </div>
@@ -278,7 +278,7 @@ export default function Inventory() {
 
       {/* Delete confirm */}
       {deleteTarget && (
-        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ background: 'rgba(30,42,94,0.4)' }}>
+        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ background: 'rgba(27,37,64,0.4)' }}>
           <div className="card p-5 w-full max-w-sm" style={{ background: '#fff' }}>
             <h3 className="font-display font-semibold text-base mb-2">Product delete karein?</h3>
             <p className="text-sm text-gray-500 mb-5">
@@ -288,7 +288,7 @@ export default function Inventory() {
               <button className="btn" onClick={() => setDeleteTarget(null)} disabled={deleting}>Cancel</button>
               <button
                 className="btn"
-                style={{ borderColor: '#D9534F', color: '#fff', background: '#D9534F' }}
+                style={{ borderColor: '#DC2626', color: '#fff', background: '#DC2626' }}
                 onClick={confirmDelete}
                 disabled={deleting}
               >
@@ -301,7 +301,7 @@ export default function Inventory() {
       )}
       {/* Delete group confirm */}
       {deleteGroupTarget && (
-        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ background: 'rgba(30,42,94,0.4)' }}>
+        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ background: 'rgba(27,37,64,0.4)' }}>
           <div className="card p-5 w-full max-w-sm" style={{ background: '#fff' }}>
             <h3 className="font-display font-semibold text-base mb-2">Group delete karein?</h3>
             <p className="text-sm text-gray-500 mb-5">
@@ -311,7 +311,7 @@ export default function Inventory() {
               <button className="btn" onClick={() => setDeleteGroupTarget(null)} disabled={deletingGroup}>Cancel</button>
               <button
                 className="btn"
-                style={{ borderColor: '#D9534F', color: '#fff', background: '#D9534F' }}
+                style={{ borderColor: '#DC2626', color: '#fff', background: '#DC2626' }}
                 onClick={confirmDeleteGroup}
                 disabled={deletingGroup}
               >

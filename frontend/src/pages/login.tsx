@@ -29,16 +29,16 @@ export default function Login() {
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
-      style={{ background: '#1E2A5E' }}
+      style={{ background: '#1B2540' }}
     >
       {/* subtle background accent */}
       <div
         className="absolute -top-24 -right-24 w-72 h-72 rounded-full opacity-10 pointer-events-none"
-        style={{ background: '#D9A441' }}
+        style={{ background: '#B5702F' }}
       />
       <div
         className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full opacity-[0.07] pointer-events-none"
-        style={{ background: '#D9A441' }}
+        style={{ background: '#B5702F' }}
       />
 
       <div className="w-full max-w-sm relative">
@@ -46,7 +46,7 @@ export default function Login() {
         <div className="text-center mb-7">
           <div
             className="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center font-display font-bold text-lg"
-            style={{ background: '#D9A441', color: '#1E2A5E' }}
+            style={{ background: '#B5702F', color: '#1B2540' }}
           >
             DT
           </div>
@@ -54,10 +54,10 @@ export default function Login() {
             Deep Trading Co.
           </h1>
           <div className="flex items-center justify-center gap-1.5 mt-2">
-            <span className="text-[11px] uppercase tracking-wider" style={{ color: '#8291BE' }}>Powered by</span>
+            <span className="text-[11px] uppercase tracking-wider" style={{ color: '#93A0C4' }}>Powered by</span>
             <span
               className="text-[11px] font-display font-semibold px-2 py-0.5 rounded-full"
-              style={{ background: 'rgba(217,164,65,0.15)', color: '#D9A441' }}
+              style={{ background: 'rgba(181,112,47,0.15)', color: '#B5702F' }}
             >
               StockBill
             </span>
@@ -66,7 +66,7 @@ export default function Login() {
 
         {/* Login card */}
         <div className="card p-6 sm:p-8" style={{ background: '#fff' }}>
-          <h2 className="font-display font-semibold text-base mb-5" style={{ color: '#1E2A5E' }}>
+          <h2 className="font-display font-semibold text-base mb-5" style={{ color: '#1B2540' }}>
             Sign in to your ledger
           </h2>
 
@@ -98,7 +98,7 @@ export default function Login() {
           </form>
         </div>
 
-        <p className="text-center text-[11px] mt-6" style={{ color: '#5C6A9C' }}>
+        <p className="text-center text-[11px] mt-6" style={{ color: '#7683A8' }}>
           Deep Trading Co. · trade ledger, digitized
         </p>
       </div>

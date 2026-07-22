@@ -18,13 +18,13 @@ export default function Sidebar({ open, onClose, onLogout }: { open: boolean; on
       <aside
         className={`w-60 shrink-0 h-screen fixed top-0 left-0 z-50 flex flex-col transition-transform duration-200 ease-out
           md:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}
-        style={{ background: '#1E2A5E' }}
+        style={{ background: '#1B2540' }}
       >
         <div className="px-5 py-6 flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">
             <div
               className="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center font-display font-bold text-sm"
-              style={{ background: '#D9A441', color: '#1E2A5E' }}
+              style={{ background: '#B5702F', color: '#1B2540' }}
             >
               DT
             </div>
@@ -34,7 +34,7 @@ export default function Sidebar({ open, onClose, onLogout }: { open: boolean; on
               </h1>
               <span
                 className="inline-block text-[10px] font-display font-semibold mt-0.5 px-1.5 py-0.5 rounded-full"
-                style={{ background: 'rgba(217,164,65,0.15)', color: '#D9A441' }}
+                style={{ background: 'rgba(181,112,47,0.15)', color: '#B5702F' }}
               >
                 StockBill
               </span>
@@ -54,7 +54,7 @@ export default function Sidebar({ open, onClose, onLogout }: { open: boolean; on
               onClick={onClose}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  isActive ? 'bg-white/10 text-white' : 'text-[#B7C1E0] hover:bg-white/5 hover:text-white'
+                  isActive ? 'bg-white/10 text-white' : 'text-[#AEB9D6] hover:bg-white/5 hover:text-white'
                 }`
               }
             >
@@ -65,13 +65,13 @@ export default function Sidebar({ open, onClose, onLogout }: { open: boolean; on
         </nav>
 
         <button
-          className="mx-3 mb-4 flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-[#B7C1E0] hover:bg-white/5 hover:text-white transition-colors"
+          className="mx-3 mb-4 flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-[#AEB9D6] hover:bg-white/5 hover:text-white transition-colors"
           onClick={onLogout}
         >
           <LogOut size={17} strokeWidth={2} />
           Logout
         </button>
-        <div className="px-5 pb-4 text-[11px]" style={{ color: '#5C6A9C' }}>
+        <div className="px-5 pb-4 text-[11px]" style={{ color: '#7683A8' }}>
           Mukul.dev · v1.0
         </div>
       </aside>

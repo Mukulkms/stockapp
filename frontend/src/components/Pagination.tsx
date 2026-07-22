@@ -15,7 +15,7 @@ export default function Pagination({ page, totalItems, pageSize, onPageChange }:
   const to = Math.min(page * pageSize, totalItems)
 
   return (
-    <div className="flex items-center justify-between gap-3 px-4 py-3 flex-wrap" style={{ borderTop: '1px solid #E4E7F1' }}>
+    <div className="flex items-center justify-between gap-3 px-4 py-3 flex-wrap" style={{ borderTop: '1px solid #E2E5ED' }}>
       <span className="text-xs text-gray-500">{from}–{to} of {totalItems}</span>
       <div className="flex items-center gap-1">
         <button
