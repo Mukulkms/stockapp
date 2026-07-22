@@ -9,11 +9,22 @@ const authRoutes = require('./routes/auth')
 const groupsRoutes = require('./routes/groups')
 const productsRoutes = require('./routes/products')
 const purchaseInvoicesRoutes = require('./routes/purchaseInvoices')
-const salesInvoicesRoutes = require('./routes/salesInvoices')
 
 const app = express()
 
-app.use(cors())
+// CORS ko sirf apne actual frontend se allow karo, sab jagah se nahi.
+// FRONTEND_URL .env mein set karo (comma-separated agar multiple ho, jaise preview URLs).
+const allowedOrigins = (process.env.FRONTEND_URL || 'https://stockapp-ivory.vercel.app')
+  .split(',')
+  .map(s => s.trim())
+
+app.use(cors({
+  origin(origin, callback) {
+    // Postman/curl/health-checks jaise bina-origin requests allow karo
+    if (!origin || allowedOrigins.includes(origin)) return callback(null, true)
+    callback(new Error('Not allowed by CORS'))
+  }
+}))
 app.use(express.json({ limit: '15mb' })) // bill photos base64 me aati hain, isliye limit badi rakhi
 
 const apiLimiter = rateLimit({
@@ -33,7 +44,6 @@ app.use('/api/auth', authRoutes)
 app.use('/api/groups', requireAuth, groupsRoutes)
 app.use('/api/products', requireAuth, productsRoutes)
 app.use('/api/purchase-invoices', requireAuth, purchaseInvoicesRoutes)
-app.use('/api/sales-invoices', requireAuth, salesInvoicesRoutes)
 
 app.use((req, res) => res.status(404).json({ message: 'Route not found' }))
 app.use(errorHandler)

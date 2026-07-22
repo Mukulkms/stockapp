@@ -29,9 +29,3 @@ export const deletePurchaseInvoiceApi = (id: string, revertStock = false) =>
   api.delete(`/purchase-invoices/${id}`, { params: { revertStock } })
 export const bulkDeletePurchaseInvoicesApi = (ids: string[], revertStock = false) =>
   api.delete('/purchase-invoices/bulk', { data: { ids, revertStock } })
-
-// ---- Sales Invoices ----
-export const getSalesInvoicesApi = () => api.get('/sales-invoices').then(r => r.data.data)
-export const createSalesInvoiceApi = (data: any) => api.post('/sales-invoices', data).then(r => r.data.data)
-export const deleteSalesInvoiceApi = (id: string, revertStock = false) =>
-  api.delete(`/sales-invoices/${id}`, { params: { revertStock } })

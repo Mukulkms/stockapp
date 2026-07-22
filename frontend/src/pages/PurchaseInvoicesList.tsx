@@ -3,9 +3,9 @@ import { Trash2, Pencil, Eye, X, Check, Loader2 } from 'lucide-react'
 import toast from 'react-hot-toast'
 import {
   getPurchaseInvoicesApi, updatePurchaseInvoiceApi, deletePurchaseInvoiceApi,
-  bulkDeletePurchaseInvoicesApi, getGroupsApi
+  bulkDeletePurchaseInvoicesApi
 } from '../api/endpoints'
-import { PurchaseInvoice, BillingGroup } from '../types'
+import { PurchaseInvoice } from '../types'
 import Amount from '../components/Amount'
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal'
 import Pagination from '../components/Pagination'
@@ -22,7 +22,6 @@ interface EditItem {
 
 export default function PurchaseInvoicesList() {
   const [invoices, setInvoices] = useState<PurchaseInvoice[]>([])
-  const [groups, setGroups] = useState<BillingGroup[]>([])
   const [loading, setLoading] = useState(true)
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [viewing, setViewing] = useState<PurchaseInvoice | null>(null)
@@ -40,7 +39,7 @@ export default function PurchaseInvoicesList() {
     getPurchaseInvoicesApi().then(list => { setInvoices(list); setPage(1) }).finally(() => setLoading(false))
   }
 
-  useEffect(() => { load(); getGroupsApi().then(setGroups) }, [])
+  useEffect(() => { load() }, [])
 
   const allSelected = invoices.length > 0 && selected.size === invoices.length
 

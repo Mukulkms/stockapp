@@ -40,21 +40,3 @@ export interface PurchaseInvoice {
   totalAmount: number
   items: PurchaseInvoiceItem[]
 }
-
-export interface SalesInvoiceItem {
-  id: string
-  productId: string
-  product: Product
-  qty: number
-  rate: number
-}
-
-export interface SalesInvoice {
-  id: string
-  invoiceNumber: string
-  customerName?: string
-  customerPhone?: string
-  billDate: string
-  totalAmount: number
-  items: SalesInvoiceItem[]
-}

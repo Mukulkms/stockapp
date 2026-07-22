@@ -1,16 +1,14 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, PackageSearch, ScanLine, Receipt, FileStack, X, LogOut } from 'lucide-react'
-import { logout } from '../api/endpoints'
+import { LayoutDashboard, PackageSearch, ScanLine, FileStack, X, LogOut } from 'lucide-react'
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/purchase', label: 'Purchase Invoice', icon: ScanLine },
   { to: '/purchase-invoices', label: 'Past Invoices', icon: FileStack },
   { to: '/inventory', label: 'Inventory', icon: PackageSearch },
-  { to: '/sales', label: 'Sales / Billing', icon: Receipt },
 ]
 
-export default function Sidebar({ open, onClose }: { open: boolean; onClose: () => void }) {
+export default function Sidebar({ open, onClose, onLogout }: { open: boolean; onClose: () => void; onLogout: () => void }) {
   return (
     <>
       {open && (
@@ -68,7 +66,7 @@ export default function Sidebar({ open, onClose }: { open: boolean; onClose: () 
 
         <button
           className="mx-3 mb-4 flex items-center gap-2 px-3 py-2.5 rounded-lg text-sm font-medium text-[#B7C1E0] hover:bg-white/5 hover:text-white transition-colors"
-          onClick={() => { logout(); location.href = '/login' }}
+          onClick={onLogout}
         >
           <LogOut size={17} strokeWidth={2} />
           Logout

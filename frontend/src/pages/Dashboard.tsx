@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { TrendingUp, Package, ShoppingCart, AlertTriangle } from 'lucide-react'
-import { getProductsApi, getSalesInvoicesApi, getPurchaseInvoicesApi } from '../api/endpoints'
-import { Product, SalesInvoice, PurchaseInvoice } from '../types'
+import { Package, ShoppingCart, AlertTriangle, ScanLine } from 'lucide-react'
+import { getProductsApi, getPurchaseInvoicesApi } from '../api/endpoints'
+import { Product, PurchaseInvoice } from '../types'
 import Amount from '../components/Amount'
 import Pagination from '../components/Pagination'
 
@@ -9,26 +9,23 @@ const PAGE_SIZE = 10
 
 export default function Dashboard() {
   const [products, setProducts] = useState<Product[]>([])
-  const [sales, setSales] = useState<SalesInvoice[]>([])
   const [purchases, setPurchases] = useState<PurchaseInvoice[]>([])
   const [loading, setLoading] = useState(true)
   const [activeGroupFilter, setActiveGroupFilter] = useState<string>('all')
   const [page, setPage] = useState(1)
 
   useEffect(() => {
-    Promise.all([getProductsApi(), getSalesInvoicesApi(), getPurchaseInvoicesApi()])
-      .then(([p, s, pu]) => { setProducts(p); setSales(s); setPurchases(pu) })
+    Promise.all([getProductsApi(), getPurchaseInvoicesApi()])
+      .then(([p, pu]) => { setProducts(p); setPurchases(pu) })
       .finally(() => setLoading(false))
   }, [])
 
   const stockValue = products.reduce((sum, p) => sum + p.stockQty * p.costPrice, 0)
-  const todaySales = sales.filter(s => s.billDate.split('T')[0] === new Date().toISOString().split('T')[0])
-  const todayTotal = todaySales.reduce((sum, s) => sum + s.totalAmount, 0)
   const lowStock = products.filter(p => p.stockQty <= 5)
 
   const stats = [
     { label: 'Stock value (cost)', value: stockValue, icon: Package, isAmount: true },
-    { label: "Today's sales", value: todayTotal, icon: TrendingUp, isAmount: true },
+    { label: 'Purchase invoices', value: purchases.length, icon: ScanLine, isAmount: false },
     { label: 'Total products', value: products.length, icon: ShoppingCart, isAmount: false },
     { label: 'Low stock items', value: lowStock.length, icon: AlertTriangle, isAmount: false, alert: lowStock.length > 0 },
   ]
@@ -61,7 +58,7 @@ export default function Dashboard() {
       <h2 className="font-display font-semibold text-2xl mb-1">Dashboard</h2>
       <p className="text-sm text-gray-500 mb-6">Aaj ka overview</p>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
         {stats.map(s => (
           <div key={s.label} className="card p-4 sm:p-5 min-w-0">
             <div className="flex items-center justify-between mb-3">
@@ -160,18 +157,18 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
         <div className="card p-4 sm:p-5">
-          <h3 className="font-display font-semibold text-sm mb-4">Recent sales</h3>
+          <h3 className="font-display font-semibold text-sm mb-4">Recent purchases</h3>
           <div className="space-y-3">
-            {sales.slice(0, 6).map(s => (
-              <div key={s.id} className="flex items-center justify-between text-sm pb-3 gap-3" style={{ borderBottom: '1px solid #F0F1F8' }}>
+            {purchases.slice(0, 6).map(inv => (
+              <div key={inv.id} className="flex items-center justify-between text-sm pb-3 gap-3" style={{ borderBottom: '1px solid #F0F1F8' }}>
                 <div className="min-w-0">
-                  <p className="font-medium truncate">{s.customerName || 'Walk-in customer'}</p>
-                  <p className="text-xs text-gray-500 truncate">{s.invoiceNumber} · {s.billDate.split('T')[0]}</p>
+                  <p className="font-medium truncate">{inv.vendorName || 'Unknown vendor'}</p>
+                  <p className="text-xs text-gray-500 truncate">{inv.invoiceNumber || '—'} · {inv.billDate.split('T')[0]}</p>
                 </div>
-                <Amount value={s.totalAmount} />
+                <Amount value={inv.totalAmount} />
               </div>
             ))}
-            {sales.length === 0 && <p className="text-xs text-gray-400">Koi sales invoice nahi bani abhi tak.</p>}
+            {purchases.length === 0 && <p className="text-xs text-gray-400">Koi purchase invoice nahi bana abhi tak.</p>}
           </div>
         </div>
 

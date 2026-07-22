@@ -1,12 +1,11 @@
 import { useState } from 'react'
-import { Routes, Route, Navigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useNavigate } from 'react-router-dom'
 import { Menu, LogOut } from 'lucide-react'
 import Sidebar from './components/Sidebar'
 import Dashboard from './pages/Dashboard'
 import Inventory from './pages/Inventory'
 import Purchase from './pages/Purchase'
 import PurchaseInvoicesList from './pages/PurchaseInvoicesList'
-import Sales from './pages/Sales'
 import Login from './pages/login'
 import { isLoggedIn, logout } from './api/endpoints'
 
@@ -17,10 +16,16 @@ function RequireAuth({ children }: { children: JSX.Element }) {
 
 function Shell() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login', { replace: true })
+  }
 
   return (
     <div className="min-h-screen" style={{ background: '#F7F8FB' }}>
-      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} onLogout={handleLogout} />
 
       <div className="md:hidden sticky top-0 z-30 flex items-center justify-between gap-3 px-4 py-3 border-b"
         style={{ background: '#1E2A5E', borderColor: '#2A386E' }}>
@@ -41,7 +46,7 @@ function Shell() {
             <span className="text-[10px]" style={{ color: '#8291BE' }}>StockBill</span>
           </div>
         </div>
-        <button className="text-white/80 hover:text-white" onClick={() => { logout(); location.href = '/login' }}>
+        <button className="text-white/80 hover:text-white" onClick={handleLogout}>
           <LogOut size={18} />
         </button>
       </div>
@@ -52,7 +57,6 @@ function Shell() {
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/purchase" element={<Purchase />} />
           <Route path="/purchase-invoices" element={<PurchaseInvoicesList />} />
-          <Route path="/sales" element={<Sales />} />
         </Routes>
       </main>
     </div>
