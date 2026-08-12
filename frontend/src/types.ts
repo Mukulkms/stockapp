@@ -86,6 +86,8 @@ export interface CompanyProfitLoss {
   expenses: number
   grossProfit: number
   netProfit: number
+  simpleProfit: number
+  simpleNetProfit: number
 }
 
 export interface ProfitLossReport {
@@ -101,5 +103,7 @@ export interface ProfitLossReport {
     grossProfit: number
     netProfit: number
     generalExpenses: number
+    simpleProfit: number
+    simpleNetProfit: number
   }
 }

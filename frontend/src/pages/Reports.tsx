@@ -67,7 +67,7 @@ export default function Reports() {
       ) : (
         <>
           {/* Overall summary tiles */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
             <div className="stat-tile" style={{ '--glow': 'rgba(27,37,64,0.18)' } as React.CSSProperties}>
               <div className="text-xs text-gray-500 mb-1">Total Purchase</div>
               <Amount value={report.summary.totalPurchase} size="lg" />
@@ -82,7 +82,7 @@ export default function Reports() {
             </div>
             <div className="stat-tile" style={{ '--glow': report.summary.netProfit >= 0 ? 'rgba(14,124,107,0.25)' : 'rgba(220,38,38,0.25)' } as React.CSSProperties}>
               <div className="text-xs text-gray-500 mb-1 flex items-center gap-1">
-                Net Profit / Loss
+                Net Profit (accurate)
                 {report.summary.netProfit >= 0
                   ? <TrendingUp size={13} style={{ color: '#0E7C6B' }} />
                   : <TrendingDown size={13} style={{ color: '#DC2626' }} />}
@@ -91,6 +91,11 @@ export default function Reports() {
                 {report.summary.netProfit < 0 ? '-' : ''}₹{Math.abs(report.summary.netProfit).toLocaleString('en-IN')}
               </span>
             </div>
+          </div>
+
+          <div className="card p-4 mb-6 text-xs text-gray-500 space-y-1">
+            <div><strong style={{ color: '#1B2540' }}>Accurate (COGS-based):</strong> sirf jo maal is period mein <em>becha</em> gaya uski cost minus hoti hai — asli profit yehi hai.</div>
+            <div><strong style={{ color: '#1B2540' }}>Simple (cash-basis):</strong> is period mein jo bhi khareeda uska poora total minus — chahe wo becha ho ya stock mein pada ho. Neeche har company card mein dono number milenge.</div>
           </div>
 
           {report.hasUnassignedProducts && (
@@ -107,6 +112,7 @@ export default function Reports() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {report.companies.map(c => {
                 const isProfit = c.netProfit >= 0
+                const isSimpleProfit = c.simpleNetProfit >= 0
                 return (
                   <div key={c.groupId} className="card p-5">
                     <div className="flex items-center justify-between mb-3">
@@ -134,11 +140,19 @@ export default function Reports() {
                         <Amount value={c.expenses} />
                       </div>
                     </div>
-                    <div className="pt-3" style={{ borderTop: '1px solid rgba(226,229,237,0.7)' }}>
-                      <span className="text-gray-500 block text-xs mb-0.5">Net Profit / Loss</span>
-                      <span className="ledger-amount ledger-amount--lg" style={{ borderBottomColor: isProfit ? '#0E7C6B' : '#DC2626', color: isProfit ? '#0E7C6B' : '#DC2626' }}>
-                        {!isProfit ? '-' : ''}₹{Math.abs(c.netProfit).toLocaleString('en-IN')}
-                      </span>
+                    <div className="pt-3 space-y-3" style={{ borderTop: '1px solid rgba(226,229,237,0.7)' }}>
+                      <div>
+                        <span className="text-gray-500 block text-xs mb-0.5">Net Profit — Accurate (COGS-based)</span>
+                        <span className="ledger-amount" style={{ borderBottomColor: isProfit ? '#0E7C6B' : '#DC2626', color: isProfit ? '#0E7C6B' : '#DC2626' }}>
+                          {!isProfit ? '-' : ''}₹{Math.abs(c.netProfit).toLocaleString('en-IN')}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500 block text-xs mb-0.5">Net Profit — Simple (Sales − Purchase − Expenses)</span>
+                        <span className="ledger-amount" style={{ borderBottomColor: isSimpleProfit ? '#0E7C6B' : '#DC2626', color: isSimpleProfit ? '#0E7C6B' : '#DC2626' }}>
+                          {!isSimpleProfit ? '-' : ''}₹{Math.abs(c.simpleNetProfit).toLocaleString('en-IN')}
+                        </span>
+                      </div>
                     </div>
                   </div>
                 )

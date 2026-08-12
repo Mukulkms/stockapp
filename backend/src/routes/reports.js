@@ -42,7 +42,9 @@ router.get('/profit-loss', asyncHandler(async (req, res) => {
       costOfGoodsSold: 0, // becha gaya maal ki cost
       expenses: 0,
       grossProfit: 0,     // totalSales - costOfGoodsSold
-      netProfit: 0        // grossProfit - expenses
+      netProfit: 0,       // grossProfit - expenses
+      simpleProfit: 0,    // totalSales - totalPurchase (cash-basis)
+      simpleNetProfit: 0  // simpleProfit - expenses
     }
   }
   // "Unassigned" bucket agar kisi product ka group delete ho chuka ho
@@ -78,6 +80,11 @@ router.get('/profit-loss', asyncHandler(async (req, res) => {
     r.expenses = +r.expenses.toFixed(2)
     r.grossProfit = +(r.totalSales - r.costOfGoodsSold).toFixed(2)
     r.netProfit = +(r.grossProfit - r.expenses).toFixed(2)
+    // Simple/cash-basis: is period mein jo bhi khareeda (chahe becha ho ya stock mein pada ho)
+    // uska poora total minus, sirf becha hua maal ki cost nahi. Chhoti dukaan ke rojmarra
+    // hisaab-kitab ke liye zyada intuitive, lekin agar stock jama ho raha ho to misleading ho sakta hai.
+    r.simpleProfit = +(r.totalSales - r.totalPurchase).toFixed(2)
+    r.simpleNetProfit = +(r.simpleProfit - r.expenses).toFixed(2)
     return r
   })
 
@@ -90,11 +97,14 @@ router.get('/profit-loss', asyncHandler(async (req, res) => {
     costOfGoodsSold: acc.costOfGoodsSold + r.costOfGoodsSold,
     expenses: acc.expenses + r.expenses,
     grossProfit: acc.grossProfit + r.grossProfit,
-    netProfit: acc.netProfit + r.netProfit
-  }), { totalPurchase: 0, totalSales: 0, costOfGoodsSold: 0, expenses: 0, grossProfit: 0, netProfit: 0 })
+    netProfit: acc.netProfit + r.netProfit,
+    simpleProfit: acc.simpleProfit + r.simpleProfit,
+    simpleNetProfit: acc.simpleNetProfit + r.simpleNetProfit
+  }), { totalPurchase: 0, totalSales: 0, costOfGoodsSold: 0, expenses: 0, grossProfit: 0, netProfit: 0, simpleProfit: 0, simpleNetProfit: 0 })
 
   summary.generalExpenses = +generalExpenses.toFixed(2)
   summary.netProfit = +(summary.netProfit - generalExpenses).toFixed(2)
+  summary.simpleNetProfit = +(summary.simpleNetProfit - generalExpenses).toFixed(2)
   Object.keys(summary).forEach(k => { summary[k] = +summary[k].toFixed(2) })
 
   res.json({

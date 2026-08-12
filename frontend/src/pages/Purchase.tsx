@@ -27,6 +27,7 @@ export default function Purchase() {
   const [groups, setGroups] = useState<BillingGroup[]>([])
   const [scanning, setScanning] = useState(false)
   const [items, setItems] = useState<DraftItem[]>([])
+  const [invoiceGroupId, setInvoiceGroupId] = useState('')
   const [vendorName, setVendorName] = useState('')
   const [vendorGSTIN, setVendorGSTIN] = useState('')
   const [vendorPhone, setVendorPhone] = useState('')
@@ -40,7 +41,7 @@ export default function Purchase() {
   const fileRef = useRef<HTMLInputElement>(null)
   const camRef = useRef<HTMLInputElement>(null)
 
-  useEffect(() => { getGroupsApi().then(setGroups) }, [])
+  useEffect(() => { getGroupsApi().then(gs => { setGroups(gs); if (gs[0]) setInvoiceGroupId(gs[0].id) }) }, [])
 
   const subTotal = useMemo(
     () => items.reduce((sum, it) => sum + (it.qty || 0) * (it.costPrice || 0), 0),
@@ -72,7 +73,7 @@ export default function Purchase() {
         qty: Math.max(0, it.qty || 1),
         unit: it.unit || 'pcs',
         costPrice: Math.max(0, it.costPrice || 0),
-        groupId: groups[0]?.id || '',
+        groupId: invoiceGroupId || groups[0]?.id || '',
         marginPercent: 0
       })))
       toast.success('Invoice padh liya! Review karo neeche.')
@@ -83,6 +84,11 @@ export default function Purchase() {
     }
   }
 
+  const changeInvoiceGroup = (id: string) => {
+    setInvoiceGroupId(id)
+    setItems(prev => prev.map(it => ({ ...it, groupId: id })))
+  }
+
   const updateItem = (i: number, patch: Partial<DraftItem>) => {
     setItems(prev => prev.map((it, idx) => idx === i ? { ...it, ...patch } : it))
   }
@@ -91,7 +97,7 @@ export default function Purchase() {
 
   const save = async () => {
     if (!items.length) { toast.error('Koi item nahi hai'); return }
-    if (items.some(it => !it.groupId)) { toast.error('Har item ke liye group select karo'); return }
+    if (!invoiceGroupId) { toast.error('Company/Group select karo'); return }
 
     setSaving(true)
     try {
@@ -150,6 +156,13 @@ export default function Purchase() {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
             <div>
+              <label className="label">Company / Group (poore invoice ke liye ek hi)</label>
+              <select className="input" value={invoiceGroupId} onChange={e => changeInvoiceGroup(e.target.value)}>
+                <option value="">Select...</option>
+                {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+              </select>
+            </div>
+            <div>
               <label className="label">Vendor name</label>
               <input className="input" value={vendorName} onChange={e => setVendorName(e.target.value)} />
             </div>
@@ -177,7 +190,6 @@ export default function Purchase() {
               <thead>
                 <tr style={{ background: '#F5F6FA', borderBottom: '1px solid #E2E5ED' }}>
                   <th className="text-left px-4 py-2.5 font-medium text-gray-500">Product</th>
-                  <th className="text-left px-4 py-2.5 font-medium text-gray-500">Group</th>
                   <th className="text-left px-4 py-2.5 font-medium text-gray-500">Qty</th>
                   <th className="text-left px-4 py-2.5 font-medium text-gray-500">Unit</th>
                   <th className="text-left px-4 py-2.5 font-medium text-gray-500">rate per box/case</th>
@@ -196,13 +208,6 @@ export default function Purchase() {
                       <td className="px-4 py-2">
                         <input className="input py-1.5" value={it.name}
                           onChange={e => updateItem(i, { name: e.target.value })} />
-                      </td>
-                      <td className="px-4 py-2">
-                        <select className="input py-1.5" value={it.groupId}
-                          onChange={e => updateItem(i, { groupId: e.target.value })}>
-                          <option value="">Select...</option>
-                          {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
-                        </select>
                       </td>
                       <td className="px-4 py-2">
                         <input className="input py-1.5 w-20" type="number" min={0} value={it.qty}
