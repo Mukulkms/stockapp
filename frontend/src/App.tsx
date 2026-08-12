@@ -6,6 +6,10 @@ import Dashboard from './pages/Dashboard'
 import Inventory from './pages/Inventory'
 import Purchase from './pages/Purchase'
 import PurchaseInvoicesList from './pages/PurchaseInvoicesList'
+import Sales from './pages/Sales'
+import SalesInvoicesList from './pages/SalesInvoicesList'
+import Expenses from './pages/Expenses'
+import Reports from './pages/Reports'
 import Login from './pages/login'
 import { isLoggedIn, logout } from './api/endpoints'
 
@@ -24,7 +28,7 @@ function Shell() {
   }
 
   return (
-    <div className="min-h-screen" style={{ background: '#F5F6FA' }}>
+    <div className="min-h-screen">
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} onLogout={handleLogout} />
 
       <div className="md:hidden sticky top-0 z-30 flex items-center justify-between gap-3 px-4 py-3 border-b"
@@ -57,6 +61,10 @@ function Shell() {
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/purchase" element={<Purchase />} />
           <Route path="/purchase-invoices" element={<PurchaseInvoicesList />} />
+          <Route path="/sales" element={<Sales />} />
+          <Route path="/sales-bills" element={<SalesInvoicesList />} />
+          <Route path="/expenses" element={<Expenses />} />
+          <Route path="/reports" element={<Reports />} />
         </Routes>
       </main>
     </div>

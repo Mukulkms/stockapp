@@ -1,10 +1,14 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, PackageSearch, ScanLine, FileStack, X, LogOut } from 'lucide-react'
+import { LayoutDashboard, PackageSearch, ScanLine, FileStack, X, LogOut, Receipt, ListOrdered, Wallet, BarChart3 } from 'lucide-react'
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/sales', label: 'New Sale / Billing', icon: Receipt },
+  { to: '/sales-bills', label: 'Sales Bills', icon: ListOrdered },
   { to: '/purchase', label: 'Purchase Invoice', icon: ScanLine },
   { to: '/purchase-invoices', label: 'Past Invoices', icon: FileStack },
+  { to: '/expenses', label: 'Expenses', icon: Wallet },
+  { to: '/reports', label: 'Profit & Loss', icon: BarChart3 },
   { to: '/inventory', label: 'Inventory', icon: PackageSearch },
 ]
 
@@ -16,9 +20,8 @@ export default function Sidebar({ open, onClose, onLogout }: { open: boolean; on
       )}
 
       <aside
-        className={`w-60 shrink-0 h-screen fixed top-0 left-0 z-50 flex flex-col transition-transform duration-200 ease-out
+        className={`glass-dark w-60 shrink-0 h-screen fixed top-0 left-0 z-50 flex flex-col transition-transform duration-200 ease-out
           md:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}
-        style={{ background: '#1B2540' }}
       >
         <div className="px-5 py-6 flex items-center justify-between">
           <div className="flex items-center gap-3 min-w-0">

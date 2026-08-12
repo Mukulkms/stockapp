@@ -29,3 +29,29 @@ export const deletePurchaseInvoiceApi = (id: string, revertStock = false) =>
   api.delete(`/purchase-invoices/${id}`, { params: { revertStock } })
 export const bulkDeletePurchaseInvoicesApi = (ids: string[], revertStock = false) =>
   api.delete('/purchase-invoices/bulk', { data: { ids, revertStock } })
+
+// ---- Sales Invoices ----
+export const getSalesInvoicesApi = (groupId?: string, from?: string, to?: string) =>
+  api.get('/sales-invoices', { params: { groupId, from, to } }).then(r => r.data.data)
+export const getSalesInvoiceApi = (id: string) =>
+  api.get(`/sales-invoices/${id}`).then(r => r.data.data)
+export const createSalesInvoiceApi = (data: any) =>
+  api.post('/sales-invoices', data).then(r => r.data.data)
+export const updateSalesInvoiceApi = (id: string, data: any) =>
+  api.put(`/sales-invoices/${id}`, data).then(r => r.data.data)
+export const deleteSalesInvoiceApi = (id: string, revertStock = false) =>
+  api.delete(`/sales-invoices/${id}`, { params: { revertStock } })
+export const bulkDeleteSalesInvoicesApi = (ids: string[], revertStock = false) =>
+  api.delete('/sales-invoices/bulk', { data: { ids, revertStock } })
+
+// ---- Expenses ----
+export const getExpensesApi = (groupId?: string, from?: string, to?: string, category?: string) =>
+  api.get('/expenses', { params: { groupId, from, to, category } }).then(r => r.data.data)
+export const createExpenseApi = (data: any) => api.post('/expenses', data).then(r => r.data.data)
+export const updateExpenseApi = (id: string, data: any) => api.put(`/expenses/${id}`, data).then(r => r.data.data)
+export const deleteExpenseApi = (id: string) => api.delete(`/expenses/${id}`)
+export const bulkDeleteExpensesApi = (ids: string[]) => api.delete('/expenses/bulk', { data: { ids } })
+
+// ---- Reports ----
+export const getProfitLossApi = (from?: string, to?: string) =>
+  api.get('/reports/profit-loss', { params: { from, to } }).then(r => r.data.data)

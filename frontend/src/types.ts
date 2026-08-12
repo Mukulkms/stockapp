@@ -40,3 +40,66 @@ export interface PurchaseInvoice {
   totalAmount: number
   items: PurchaseInvoiceItem[]
 }
+
+export interface SalesInvoiceItem {
+  id: string
+  productId: string
+  product: Product
+  qty: number
+  rate: number
+  costPrice: number
+}
+
+export interface SalesInvoice {
+  id: string
+  invoiceNumber: string
+  customerName?: string
+  customerPhone?: string
+  customerGSTIN?: string
+  customerAddress?: string
+  billDate: string
+  imageUrl?: string
+  subTotal: number
+  discountAmount: number
+  taxAmount: number
+  totalAmount: number
+  items: SalesInvoiceItem[]
+}
+
+export interface Expense {
+  id: string
+  title: string
+  category: string
+  amount: number
+  groupId?: string | null
+  group?: BillingGroup | null
+  note?: string
+  expenseDate: string
+}
+
+export interface CompanyProfitLoss {
+  groupId: string | null
+  groupName: string
+  totalPurchase: number
+  totalSales: number
+  costOfGoodsSold: number
+  expenses: number
+  grossProfit: number
+  netProfit: number
+}
+
+export interface ProfitLossReport {
+  from: string | null
+  to: string | null
+  companies: CompanyProfitLoss[]
+  hasUnassignedProducts: boolean
+  summary: {
+    totalPurchase: number
+    totalSales: number
+    costOfGoodsSold: number
+    expenses: number
+    grossProfit: number
+    netProfit: number
+    generalExpenses: number
+  }
+}
