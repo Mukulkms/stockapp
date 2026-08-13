@@ -116,6 +116,7 @@ export default function PurchaseInvoicesList() {
       billDate: inv.billDate.split('T')[0],
       discountAmount: inv.discountAmount || 0,
       taxAmount: inv.taxAmount || 0,
+      gstInclusive: !!inv.gstInclusive,
       totalAmount: inv.totalAmount || 0
     })
     setEditItems(inv.items.map(it => ({
@@ -267,6 +268,7 @@ export default function PurchaseInvoicesList() {
               <div><span className="text-gray-500">Phone: </span>{viewing.vendorPhone || '—'}</div>
               <div className="sm:col-span-2"><span className="text-gray-500">Address: </span>{viewing.vendorAddress || '—'}</div>
               <div><span className="text-gray-500">Date: </span>{new Date(viewing.billDate).toLocaleDateString('en-IN')}</div>
+              <div><span className="text-gray-500">GST: </span>{viewing.gstInclusive ? 'Rate mein included' : 'Alag se laga hai'}</div>
             </div>
 
             <div className="card overflow-hidden mb-4">
@@ -402,6 +404,14 @@ export default function PurchaseInvoicesList() {
                 <input className="input" type="number" min={0} value={editFields.taxAmount}
                   onChange={e => setEditFields({ ...editFields, taxAmount: Math.max(0, parseFloat(e.target.value) || 0) })} />
               </div>
+            </div>
+            <div className="mb-3">
+              <label className="label">GST rate mein hi included hai ya alag se laga hai?</label>
+              <select className="input" value={editFields.gstInclusive ? 'inclusive' : 'exclusive'}
+                onChange={e => setEditFields({ ...editFields, gstInclusive: e.target.value === 'inclusive' })}>
+                <option value="exclusive">GST alag se laga hai</option>
+                <option value="inclusive">GST already rate mein included hai</option>
+              </select>
             </div>
             <div className="mb-5">
               <label className="label">Actual bill amount (final, editable)</label>

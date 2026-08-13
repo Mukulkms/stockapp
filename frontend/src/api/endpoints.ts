@@ -33,3 +33,10 @@ export const bulkDeletePurchaseInvoicesApi = (ids: string[], revertStock = false
 // ---- Reports ----
 export const getProfitLossApi = (from?: string, to?: string) =>
   api.get('/reports/profit-loss', { params: { from, to } }).then(r => r.data.data)
+export const getMonthlyBreakdownApi = (groupId: string) =>
+  api.get('/reports/monthly', { params: { groupId } }).then(r => r.data.data)
+
+// ---- Monthly Sales (manual, saved per company per month) ----
+export const saveMonthlySalesApi = (data: { groupId: string; year: number; month: number; salesAmount: number; note?: string }) =>
+  api.post('/monthly-sales', data).then(r => r.data.data)
+export const deleteMonthlySalesApi = (id: string) => api.delete(`/monthly-sales/${id}`)

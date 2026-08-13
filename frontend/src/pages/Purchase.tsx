@@ -37,6 +37,7 @@ export default function Purchase() {
   const [billDate, setBillDate] = useState(todayISO())
   const [discountAmount, setDiscountAmount] = useState(0)
   const [taxAmount, setTaxAmount] = useState(0)
+  const [gstInclusive, setGstInclusive] = useState(false)
   const [totalAmount, setTotalAmount] = useState<number | ''>('')
   const [totalTouched, setTotalTouched] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -64,6 +65,7 @@ export default function Purchase() {
       setBillDate(parseInvoiceDateToISO(data.date) || todayISO())
       setDiscountAmount(data.discountAmount || 0)
       setTaxAmount(data.taxAmount || 0)
+      setGstInclusive(data.gstInclusive === true)
       if (data.totalAmount !== undefined && data.totalAmount !== null) {
         setTotalAmount(data.totalAmount)
         setTotalTouched(true)
@@ -109,6 +111,7 @@ export default function Purchase() {
         billDate: billDate || todayISO(),
         discountAmount: discountAmount || 0,
         taxAmount: taxAmount || 0,
+        gstInclusive,
         totalAmount: totalTouched && totalAmount !== '' ? totalAmount : undefined,
         items: items.map(it => ({
           name: it.name, groupId: it.groupId, unit: it.unit,
@@ -118,7 +121,7 @@ export default function Purchase() {
       toast.success('Purchase invoice save ho gaya, stock update ho gaya ✓')
       setItems([]); setVendorName(''); setVendorGSTIN(''); setVendorPhone(''); setVendorAddress('')
       setInvoiceNumber(''); setBillDate(todayISO())
-      setDiscountAmount(0); setTaxAmount(0); setTotalAmount(''); setTotalTouched(false)
+      setDiscountAmount(0); setTaxAmount(0); setGstInclusive(false); setTotalAmount(''); setTotalTouched(false)
     } catch (e: any) {
       toast.error(e?.response?.data?.message || 'Save nahi hua')
     } finally {
@@ -265,6 +268,17 @@ export default function Purchase() {
                 <input className="input" type="number" min={0} value={taxAmount}
                   onChange={e => setTaxAmount(Math.max(0, parseFloat(e.target.value) || 0))} />
               </div>
+            </div>
+            <div className="mb-3">
+              <label className="label">GST rate mein hi included hai ya alag se laga hai?</label>
+              <select className="input" value={gstInclusive ? 'inclusive' : 'exclusive'}
+                onChange={e => setGstInclusive(e.target.value === 'inclusive')}>
+                <option value="exclusive">GST alag se laga hai (item rate GST ke bina hai, tax upar add hota hai)</option>
+                <option value="inclusive">GST already rate mein included hai (item rate GST ke saath hai)</option>
+              </select>
+              <p className="text-xs text-gray-400 mt-1">
+                Bill pe agar "inclusive of GST/tax" likha hai to "included" select karo, warna default (alag se) hi rakho.
+              </p>
             </div>
             <div>
               <label className="label">Actual bill amount (jo bill pe likha hai — final, editable)</label>

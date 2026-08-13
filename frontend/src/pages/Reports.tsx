@@ -3,6 +3,7 @@ import { TrendingUp, TrendingDown, Calendar, SlidersHorizontal } from 'lucide-re
 import { getProfitLossApi, getGroupsApi } from '../api/endpoints'
 import { BillingGroup, ProfitLossReport } from '../types'
 import Amount from '../components/Amount'
+import MonthlySalesPanel from '../components/MonthlySalesPanel'
 import { todayISO } from '../lib/helpers'
 
 type StatusFilter = 'all' | 'profit' | 'loss'
@@ -27,9 +28,6 @@ export default function Reports() {
   const [report, setReport] = useState<ProfitLossReport | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  // Manual sales override — company id -> user-typed sales figure (jab tum khud total sales daalna chaho
-  // instead of ki system automatically Sales Bills se jodta hai)
-  const [manualSales, setManualSales] = useState<Record<string, string>>({})
 
   // --- Company-wise breakdown filters ---
   const [groups, setGroups] = useState<BillingGroup[]>([])
@@ -242,14 +240,6 @@ export default function Reports() {
                 const isProfit = c.netProfit >= 0
                 const isSimpleProfit = c.simpleNetProfit >= 0
 
-                // Manual override: agar is company ke liye tumne sales khud type ki hai,
-                // to profit usi se calculate hoga (purchase + expenses system se automatic aata hai)
-                const manualVal = manualSales[c.groupId || 'unassigned']
-                const manualSalesNum = manualVal !== undefined && manualVal !== '' ? parseFloat(manualVal) : null
-                const hasManual = manualSalesNum !== null && !isNaN(manualSalesNum)
-                const manualProfit = hasManual ? +(manualSalesNum! - c.totalPurchase - c.expenses).toFixed(2) : null
-                const isManualProfit = manualProfit !== null && manualProfit >= 0
-
                 return (
                   <div key={c.groupId} className="card p-5">
                     <div className="flex items-center justify-between mb-3">
@@ -292,20 +282,7 @@ export default function Reports() {
                       </div>
                     </div>
 
-                    <div className="pt-3 mt-3" style={{ borderTop: '1px dashed rgba(226,229,237,0.9)' }}>
-                      <label className="label">Ya khud total sales daalo (Purchase + Expenses system se aayenge)</label>
-                      <input className="input" type="number" min={0} placeholder={`e.g. 115000`}
-                        value={manualVal || ''}
-                        onChange={e => setManualSales(prev => ({ ...prev, [c.groupId || 'unassigned']: e.target.value }))} />
-                      {hasManual && (
-                        <div className="mt-2">
-                          <span className="text-gray-500 block text-xs mb-0.5">Manual Net Profit</span>
-                          <span className="ledger-amount ledger-amount--lg" style={{ borderBottomColor: isManualProfit ? '#0E7C6B' : '#DC2626', color: isManualProfit ? '#0E7C6B' : '#DC2626' }}>
-                            {!isManualProfit ? '-' : ''}₹{Math.abs(manualProfit!).toLocaleString('en-IN')}
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                    {c.groupId && <MonthlySalesPanel groupId={c.groupId} />}
                   </div>
                 )
               })}

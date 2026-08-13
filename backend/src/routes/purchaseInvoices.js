@@ -100,6 +100,7 @@ router.post('/scan', asyncHandler(async (req, res) => {
   "subTotal": number or null (sum of items before discount/tax, if printed on bill),
   "discountAmount": number or null (total discount/less amount printed on bill),
   "taxAmount": number or null (GST/tax amount printed on bill),
+  "gstInclusive": boolean or null (true if the bill explicitly says rates/amount are "inclusive of GST/tax", false if GST/tax is added separately on top, null if unclear),
   "totalAmount": number or null (the FINAL grand total actually charged/paid on the bill - most important field, read it exactly as printed)
 }
 If a field is unclear, use null. Numbers must be plain numbers, no currency symbols or commas.`
@@ -174,13 +175,13 @@ router.get('/:id', asyncHandler(async (req, res) => {
 
 // POST /api/purchase-invoices
 // body: { invoiceNumber, vendorName, vendorGSTIN, vendorPhone, vendorAddress, billDate, imageUrl,
-//         discountAmount, taxAmount, totalAmount (actual bill amount, editable),
+//         discountAmount, taxAmount, totalAmount (actual bill amount, editable), gstInclusive,
 //         items: [{ productId?, name?, groupId, unit, qty, costPrice, marginPercent, marginFlat }] }
 // productId na ho to naya product us group mein create hoga. Stock qty add hoga, costPrice/sellingPrice update hoga.
 router.post('/', asyncHandler(async (req, res) => {
   const {
     invoiceNumber, vendorName, vendorGSTIN, vendorPhone, vendorAddress,
-    billDate, imageUrl, discountAmount, taxAmount, totalAmount, items
+    billDate, imageUrl, discountAmount, taxAmount, totalAmount, gstInclusive, items
   } = req.body
   if (!items?.length) { res.status(400); throw new Error('At least one item required') }
 
@@ -223,6 +224,7 @@ router.post('/', asyncHandler(async (req, res) => {
       subTotal: +subTotal.toFixed(2),
       discountAmount: finalDiscount,
       taxAmount: finalTax,
+      gstInclusive: !!gstInclusive,
       totalAmount: finalTotal
     }
   })
@@ -246,7 +248,7 @@ router.put('/:id', asyncHandler(async (req, res) => {
   const { id } = req.params
   const {
     invoiceNumber, vendorName, vendorGSTIN, vendorPhone, vendorAddress,
-    billDate, imageUrl, discountAmount, taxAmount, totalAmount, items
+    billDate, imageUrl, discountAmount, taxAmount, totalAmount, gstInclusive, items
   } = req.body
 
   if (!items?.length) { res.status(400); throw new Error('At least one item required') }
@@ -301,6 +303,7 @@ router.put('/:id', asyncHandler(async (req, res) => {
       subTotal: +subTotal.toFixed(2),
       discountAmount: finalDiscount,
       taxAmount: finalTax,
+      gstInclusive: gstInclusive !== undefined ? !!gstInclusive : existingInvoice.gstInclusive,
       totalAmount: finalTotal
     }
   })

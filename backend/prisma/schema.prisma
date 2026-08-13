@@ -20,6 +20,7 @@ model BillingGroup {
   name      String    @unique   // "Pulse", "Toffee", "MTR"
   products  Product[]
   expenses  Expense[]
+  monthlySales MonthlySales[]
   createdAt DateTime  @default(now())
 }
 
@@ -56,6 +57,7 @@ model PurchaseInvoice {
   subTotal       Float    @default(0)   // sum of qty*costPrice across items (auto-calculated)
   discountAmount Float    @default(0)
   taxAmount      Float    @default(0)
+  gstInclusive   Boolean  @default(false)  // true = item rate already GST-included; false = taxAmount is added separately on top
   totalAmount    Float    @default(0)   // ACTUAL final amount as printed on the bill (editable, not auto-computed)
   items          PurchaseInvoiceItem[]
   createdAt      DateTime @default(now())
@@ -121,4 +123,22 @@ model Expense {
 
   @@index([groupId])
   @@index([expenseDate])
+}
+
+// Har company/group ke liye, ek mahine mein total sales kitni hui — user manually
+// enter karta hai (abhi tak koi Sales Invoice module nahi hai). Isi se month-wise
+// profit calculate hota hai: sales - (us mahine ka purchase) - (us mahine ka expense).
+model MonthlySales {
+  id          String   @id @default(cuid())
+  groupId     String
+  group       BillingGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  year        Int
+  month       Int      // 1-12
+  salesAmount Float    @default(0)
+  note        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([groupId, year, month])
+  @@index([groupId])
 }

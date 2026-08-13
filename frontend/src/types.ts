@@ -37,6 +37,7 @@ export interface PurchaseInvoice {
   subTotal: number
   discountAmount: number
   taxAmount: number
+  gstInclusive: boolean
   totalAmount: number
   items: PurchaseInvoiceItem[]
 }
@@ -106,4 +107,21 @@ export interface ProfitLossReport {
     simpleProfit: number
     simpleNetProfit: number
   }
+}
+
+export interface MonthlyBreakdownRow {
+  year: number
+  month: number
+  purchaseTotal: number
+  expensesTotal: number
+  salesAmount: number
+  hasSalesEntry: boolean
+  salesEntryId: string | null
+  netProfit: number
+}
+
+export interface MonthlyBreakdownReport {
+  groupId: string
+  groupName: string
+  months: MonthlyBreakdownRow[]
 }
