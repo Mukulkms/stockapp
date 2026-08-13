@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import { scanPurchaseInvoiceApi, createPurchaseInvoiceApi, getGroupsApi } from '../api/endpoints'
 import { BillingGroup } from '../types'
 import Amount from '../components/Amount'
+import { todayISO, parseInvoiceDateToISO } from '../lib/helpers'
 
 interface DraftItem {
   name: string
@@ -33,6 +34,7 @@ export default function Purchase() {
   const [vendorPhone, setVendorPhone] = useState('')
   const [vendorAddress, setVendorAddress] = useState('')
   const [invoiceNumber, setInvoiceNumber] = useState('')
+  const [billDate, setBillDate] = useState(todayISO())
   const [discountAmount, setDiscountAmount] = useState(0)
   const [taxAmount, setTaxAmount] = useState(0)
   const [totalAmount, setTotalAmount] = useState<number | ''>('')
@@ -59,6 +61,7 @@ export default function Purchase() {
       setVendorPhone(data.vendorPhone || '')
       setVendorAddress(data.vendorAddress || '')
       setInvoiceNumber(data.invoiceNumber || '')
+      setBillDate(parseInvoiceDateToISO(data.date) || todayISO())
       setDiscountAmount(data.discountAmount || 0)
       setTaxAmount(data.taxAmount || 0)
       if (data.totalAmount !== undefined && data.totalAmount !== null) {
@@ -103,6 +106,7 @@ export default function Purchase() {
     try {
       await createPurchaseInvoiceApi({
         vendorName, vendorGSTIN, vendorPhone, vendorAddress, invoiceNumber,
+        billDate: billDate || todayISO(),
         discountAmount: discountAmount || 0,
         taxAmount: taxAmount || 0,
         totalAmount: totalTouched && totalAmount !== '' ? totalAmount : undefined,
@@ -113,7 +117,8 @@ export default function Purchase() {
       })
       toast.success('Purchase invoice save ho gaya, stock update ho gaya ✓')
       setItems([]); setVendorName(''); setVendorGSTIN(''); setVendorPhone(''); setVendorAddress('')
-      setInvoiceNumber(''); setDiscountAmount(0); setTaxAmount(0); setTotalAmount(''); setTotalTouched(false)
+      setInvoiceNumber(''); setBillDate(todayISO())
+      setDiscountAmount(0); setTaxAmount(0); setTotalAmount(''); setTotalTouched(false)
     } catch (e: any) {
       toast.error(e?.response?.data?.message || 'Save nahi hua')
     } finally {
@@ -169,6 +174,11 @@ export default function Purchase() {
             <div>
               <label className="label">Invoice number</label>
               <input className="input" value={invoiceNumber} onChange={e => setInvoiceNumber(e.target.value)} />
+            </div>
+            <div>
+              <label className="label">Bill date (jis din purchase hui)</label>
+              <input className="input" type="date" value={billDate} max={todayISO()}
+                onChange={e => setBillDate(e.target.value)} />
             </div>
             <div>
               <label className="label">GST number</label>

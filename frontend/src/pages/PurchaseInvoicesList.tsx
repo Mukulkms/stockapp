@@ -9,6 +9,7 @@ import { PurchaseInvoice } from '../types'
 import Amount from '../components/Amount'
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal'
 import Pagination from '../components/Pagination'
+import { todayISO } from '../lib/helpers'
 
 const PAGE_SIZE = 10
 
@@ -33,6 +34,9 @@ export default function PurchaseInvoicesList() {
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
   const [page, setPage] = useState(1)
+  const [search, setSearch] = useState('')
+  const [fromDate, setFromDate] = useState('')
+  const [toDate, setToDate] = useState('')
 
   const load = () => {
     setLoading(true)
@@ -41,10 +45,26 @@ export default function PurchaseInvoicesList() {
 
   useEffect(() => { load() }, [])
 
-  const allSelected = invoices.length > 0 && selected.size === invoices.length
+  const filteredInvoices = useMemo(() => {
+    return invoices.filter(inv => {
+      if (search) {
+        const q = search.toLowerCase()
+        const hay = `${inv.vendorName || ''} ${inv.invoiceNumber || ''} ${inv.vendorGSTIN || ''}`.toLowerCase()
+        if (!hay.includes(q)) return false
+      }
+      const d = inv.billDate.split('T')[0]
+      if (fromDate && d < fromDate) return false
+      if (toDate && d > toDate) return false
+      return true
+    })
+  }, [invoices, search, fromDate, toDate])
+
+  useEffect(() => { setPage(1) }, [search, fromDate, toDate])
+
+  const allSelected = filteredInvoices.length > 0 && selected.size === filteredInvoices.length
 
   const toggleAll = () => {
-    setSelected(allSelected ? new Set() : new Set(invoices.map(i => i.id)))
+    setSelected(allSelected ? new Set() : new Set(filteredInvoices.map(i => i.id)))
   }
   const toggleOne = (id: string) => {
     setSelected(prev => {
@@ -93,6 +113,7 @@ export default function PurchaseInvoicesList() {
       vendorGSTIN: inv.vendorGSTIN || '',
       vendorPhone: inv.vendorPhone || '',
       vendorAddress: inv.vendorAddress || '',
+      billDate: inv.billDate.split('T')[0],
       discountAmount: inv.discountAmount || 0,
       taxAmount: inv.taxAmount || 0,
       totalAmount: inv.totalAmount || 0
@@ -141,7 +162,7 @@ export default function PurchaseInvoicesList() {
     [editItems]
   )
 
-  const pageItems = invoices.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+  const pageItems = filteredInvoices.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
@@ -155,12 +176,39 @@ export default function PurchaseInvoicesList() {
           </button>
         )}
       </div>
-      <p className="text-sm text-gray-500 mb-6">Purane bills dekho, edit karo, ya ek saath delete karo</p>
+      <p className="text-sm text-gray-500 mb-4">Purane bills dekho, edit karo, ya ek saath delete karo</p>
+
+      <div className="card p-4 mb-6">
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex-1 min-w-[180px]">
+            <label className="label mb-1">Search (vendor / invoice # / GSTIN)</label>
+            <input className="input py-1.5" placeholder="e.g. Pulse or INV-102"
+              value={search} onChange={e => setSearch(e.target.value)} />
+          </div>
+          <div>
+            <label className="label mb-1">From</label>
+            <input className="input py-1.5" type="date" value={fromDate} max={toDate || undefined}
+              onChange={e => setFromDate(e.target.value)} />
+          </div>
+          <div>
+            <label className="label mb-1">To</label>
+            <input className="input py-1.5" type="date" value={toDate} min={fromDate || undefined}
+              onChange={e => setToDate(e.target.value)} />
+          </div>
+          {(search || fromDate || toDate) && (
+            <button className="btn btn-sm" onClick={() => { setSearch(''); setFromDate(''); setToDate('') }}>
+              Clear filters
+            </button>
+          )}
+        </div>
+      </div>
 
       {loading ? (
         <div className="text-sm text-gray-400">Loading...</div>
       ) : invoices.length === 0 ? (
         <div className="text-sm text-gray-400">Koi purchase invoice nahi hai abhi</div>
+      ) : filteredInvoices.length === 0 ? (
+        <div className="text-sm text-gray-400">Filter se koi invoice match nahi hui</div>
       ) : (
         <div className="card overflow-hidden">
           <div className="overflow-x-auto">
@@ -199,7 +247,7 @@ export default function PurchaseInvoicesList() {
               </tbody>
             </table>
           </div>
-          <Pagination page={page} totalItems={invoices.length} pageSize={PAGE_SIZE} onPageChange={setPage} />
+          <Pagination page={page} totalItems={filteredInvoices.length} pageSize={PAGE_SIZE} onPageChange={setPage} />
         </div>
       )}
 
@@ -282,6 +330,11 @@ export default function PurchaseInvoicesList() {
                 <label className="label">Invoice number</label>
                 <input className="input" value={editFields.invoiceNumber}
                   onChange={e => setEditFields({ ...editFields, invoiceNumber: e.target.value })} />
+              </div>
+              <div>
+                <label className="label">Bill date</label>
+                <input className="input" type="date" value={editFields.billDate} max={todayISO()}
+                  onChange={e => setEditFields({ ...editFields, billDate: e.target.value })} />
               </div>
               <div>
                 <label className="label">GST number</label>

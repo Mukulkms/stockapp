@@ -1,9 +1,13 @@
-import { useEffect, useState } from 'react'
-import { TrendingUp, TrendingDown, Calendar } from 'lucide-react'
-import { getProfitLossApi } from '../api/endpoints'
-import { ProfitLossReport } from '../types'
+import { useEffect, useMemo, useState } from 'react'
+import { TrendingUp, TrendingDown, Calendar, SlidersHorizontal } from 'lucide-react'
+import { getProfitLossApi, getGroupsApi } from '../api/endpoints'
+import { BillingGroup, ProfitLossReport } from '../types'
 import Amount from '../components/Amount'
 import { todayISO } from '../lib/helpers'
+
+type StatusFilter = 'all' | 'profit' | 'loss'
+type SortKey = 'name' | 'netProfitDesc' | 'netProfitAsc' | 'salesDesc' | 'purchaseDesc'
+type BasisKey = 'accurate' | 'simple'
 
 function firstDayOfMonth(): string {
   const d = new Date()
@@ -27,6 +31,16 @@ export default function Reports() {
   // instead of ki system automatically Sales Bills se jodta hai)
   const [manualSales, setManualSales] = useState<Record<string, string>>({})
 
+  // --- Company-wise breakdown filters ---
+  const [groups, setGroups] = useState<BillingGroup[]>([])
+  const [companyFilter, setCompanyFilter] = useState('all')
+  const [companySearch, setCompanySearch] = useState('')
+  const [status, setStatus] = useState<StatusFilter>('all')
+  const [sortKey, setSortKey] = useState<SortKey>('name')
+  const [basis, setBasis] = useState<BasisKey>('accurate')
+
+  useEffect(() => { getGroupsApi().then(setGroups).catch(() => {}) }, [])
+
   const load = (f: string, t: string) => {
     setLoading(true)
     setError(null)
@@ -41,6 +55,47 @@ export default function Reports() {
   const applyPreset = (p: typeof PRESETS[number]) => {
     setFrom(p.from); setTo(p.to); load(p.from, p.to)
   }
+
+  const filteredCompanies = useMemo(() => {
+    if (!report) return []
+    let rows = report.companies
+
+    if (companyFilter !== 'all') {
+      rows = rows.filter(c => (c.groupId || 'unassigned') === companyFilter)
+    }
+    if (companySearch.trim()) {
+      const q = companySearch.trim().toLowerCase()
+      rows = rows.filter(c => c.groupName.toLowerCase().includes(q))
+    }
+    if (status !== 'all') {
+      rows = rows.filter(c => {
+        const profit = basis === 'accurate' ? c.netProfit : c.simpleNetProfit
+        return status === 'profit' ? profit >= 0 : profit < 0
+      })
+    }
+
+    rows = [...rows].sort((a, b) => {
+      switch (sortKey) {
+        case 'netProfitDesc': {
+          const av = basis === 'accurate' ? a.netProfit : a.simpleNetProfit
+          const bv = basis === 'accurate' ? b.netProfit : b.simpleNetProfit
+          return bv - av
+        }
+        case 'netProfitAsc': {
+          const av = basis === 'accurate' ? a.netProfit : a.simpleNetProfit
+          const bv = basis === 'accurate' ? b.netProfit : b.simpleNetProfit
+          return av - bv
+        }
+        case 'salesDesc': return b.totalSales - a.totalSales
+        case 'purchaseDesc': return b.totalPurchase - a.totalPurchase
+        default: return a.groupName.localeCompare(b.groupName)
+      }
+    })
+
+    return rows
+  }, [report, companyFilter, companySearch, status, sortKey, basis])
+
+  const filtersActive = companyFilter !== 'all' || companySearch.trim() !== '' || status !== 'all' || sortKey !== 'name'
 
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
@@ -120,12 +175,70 @@ export default function Reports() {
           )}
 
           {/* Company-wise cards */}
-          <h3 className="font-display font-semibold text-lg mb-3">Company-wise breakdown</h3>
+          <div className="flex items-center justify-between mb-3 gap-3 flex-wrap">
+            <h3 className="font-display font-semibold text-lg">Company-wise breakdown</h3>
+            {filtersActive && (
+              <button className="btn btn-sm" onClick={() => { setCompanyFilter('all'); setCompanySearch(''); setStatus('all'); setSortKey('name') }}>
+                Clear filters
+              </button>
+            )}
+          </div>
+
           {report.companies.length === 0 ? (
             <div className="text-sm text-gray-400">Koi company nahi hai — Inventory me group/company add karo</div>
           ) : (
+            <>
+              <div className="card p-4 mb-4">
+                <div className="flex flex-wrap items-end gap-3">
+                  <div className="flex items-center gap-2">
+                    <SlidersHorizontal size={15} className="text-gray-400" />
+                    <div>
+                      <label className="label mb-1">Company</label>
+                      <select className="input py-1.5" value={companyFilter} onChange={e => setCompanyFilter(e.target.value)}>
+                        <option value="all">All companies</option>
+                        {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
+                        {report.hasUnassignedProducts && <option value="unassigned">Unassigned</option>}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="min-w-[160px]">
+                    <label className="label mb-1">Search company</label>
+                    <input className="input py-1.5" placeholder="e.g. Pulse" value={companySearch}
+                      onChange={e => setCompanySearch(e.target.value)} />
+                  </div>
+                  <div>
+                    <label className="label mb-1">Status</label>
+                    <select className="input py-1.5" value={status} onChange={e => setStatus(e.target.value as StatusFilter)}>
+                      <option value="all">All</option>
+                      <option value="profit">Profit only</option>
+                      <option value="loss">Loss only</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="label mb-1">Sort by</label>
+                    <select className="input py-1.5" value={sortKey} onChange={e => setSortKey(e.target.value as SortKey)}>
+                      <option value="name">Name (A-Z)</option>
+                      <option value="netProfitDesc">Highest profit first</option>
+                      <option value="netProfitAsc">Highest loss first</option>
+                      <option value="salesDesc">Highest sales first</option>
+                      <option value="purchaseDesc">Highest purchase first</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="label mb-1">Profit basis (for status/sort)</label>
+                    <select className="input py-1.5" value={basis} onChange={e => setBasis(e.target.value as BasisKey)}>
+                      <option value="accurate">Accurate (COGS)</option>
+                      <option value="simple">Simple (cash-basis)</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {filteredCompanies.length === 0 ? (
+                <div className="text-sm text-gray-400 mb-4">Filter se koi company match nahi hui</div>
+              ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {report.companies.map(c => {
+              {filteredCompanies.map(c => {
                 const isProfit = c.netProfit >= 0
                 const isSimpleProfit = c.simpleNetProfit >= 0
 
@@ -196,7 +309,9 @@ export default function Reports() {
                   </div>
                 )
               })}
-            </div>
+                </div>
+              )}
+            </>
           )}
         </>
       )}
