@@ -40,3 +40,9 @@ export const getMonthlyBreakdownApi = (groupId: string) =>
   api.get(`/monthly-sales/${groupId}`).then(r => r.data.data)
 export const saveMonthlySalesApi = (data: { groupId: string; year: number; month: number; salesAmount: number; note?: string }) =>
   api.post('/monthly-sales', data).then(r => r.data.data)
+
+// ---- Cheques ----
+export const getChequesApi = () => api.get('/cheques').then(r => r.data.data)
+export const createChequeApi = (data: any) => api.post('/cheques', data).then(r => r.data.data)
+export const updateChequeApi = (id: string, data: any) => api.put(`/cheques/${id}`, data).then(r => r.data.data)
+export const deleteChequeApi = (id: string) => api.delete(`/cheques/${id}`)

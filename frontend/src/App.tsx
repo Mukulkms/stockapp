@@ -6,6 +6,7 @@ import Dashboard from './pages/Dashboard'
 import Inventory from './pages/Inventory'
 import Purchase from './pages/Purchase'
 import PurchaseInvoicesList from './pages/PurchaseInvoicesList'
+import Cheques from './pages/Cheques'
 import Reports from './pages/Reports'
 import Login from './pages/login'
 import { isLoggedIn, logout } from './api/endpoints'
@@ -58,6 +59,7 @@ function Shell() {
           <Route path="/inventory" element={<Inventory />} />
           <Route path="/purchase" element={<Purchase />} />
           <Route path="/purchase-invoices" element={<PurchaseInvoicesList />} />
+          <Route path="/cheques" element={<Cheques />} />
           <Route path="/reports" element={<Reports />} />
         </Routes>
       </main>

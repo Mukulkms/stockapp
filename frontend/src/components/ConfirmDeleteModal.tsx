@@ -4,7 +4,7 @@ import { Loader2, Trash2 } from 'lucide-react'
 interface Props {
   title: string
   message: string
-  revertLabel: string
+  revertLabel?: string
   busy?: boolean
   onCancel: () => void
   onConfirm: (revertStock: boolean) => void
@@ -19,15 +19,17 @@ export default function ConfirmDeleteModal({ title, message, revertLabel, busy, 
         <h3 className="font-display font-semibold text-base mb-2">{title}</h3>
         <p className="text-sm text-haze-500 mb-4">{message}</p>
 
-        <label className="flex items-start gap-2 text-sm mb-5 p-3 rounded-lg" style={{ background: '#F7F5FE', border: '1px solid #E3DFFA' }}>
-          <input
-            type="checkbox"
-            className="mt-0.5"
-            checked={revertStock}
-            onChange={e => setRevertStock(e.target.checked)}
-          />
-          <span>{revertLabel}</span>
-        </label>
+        {revertLabel && (
+          <label className="flex items-start gap-2 text-sm mb-5 p-3 rounded-lg" style={{ background: '#F7F5FE', border: '1px solid #E3DFFA' }}>
+            <input
+              type="checkbox"
+              className="mt-0.5"
+              checked={revertStock}
+              onChange={e => setRevertStock(e.target.checked)}
+            />
+            <span>{revertLabel}</span>
+          </label>
+        )}
 
         <div className="flex gap-2 justify-end">
           <button className="btn" onClick={onCancel} disabled={busy}>Cancel</button>

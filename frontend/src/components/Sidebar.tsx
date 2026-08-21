@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, PackageSearch, ScanLine, FileStack, X, LogOut, BarChart3 } from 'lucide-react'
+import { LayoutDashboard, PackageSearch, ScanLine, FileStack, X, LogOut, BarChart3, Landmark } from 'lucide-react'
 
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/purchase', label: 'Purchase Invoice', icon: ScanLine },
   { to: '/purchase-invoices', label: 'Past Invoices', icon: FileStack },
+  { to: '/cheques', label: 'Cheques', icon: Landmark },
   { to: '/reports', label: 'Profit & Loss', icon: BarChart3 },
   { to: '/inventory', label: 'Inventory', icon: PackageSearch },
 ]

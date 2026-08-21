@@ -21,6 +21,7 @@ model BillingGroup {
   products  Product[]
   expenses  Expense[]
   monthlySales MonthlySales[]
+  cheques   Cheque[]
   createdAt DateTime  @default(now())
 }
 
@@ -138,4 +139,21 @@ model MonthlySales {
 
   @@unique([groupId, year, month])
   @@index([groupId])
+}
+
+model Cheque {
+  id            String   @id @default(cuid())
+  groupId       String
+  group         BillingGroup @relation(fields: [groupId], references: [id])
+  chequeNumber  String
+  bankName      String?
+  amount        Float
+  chequeDate    DateTime @default(now())   // cheque pe likhi hui date
+  status        String   @default("pending") // pending | cleared | bounced
+  note          String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([groupId])
+  @@index([chequeDate])
 }

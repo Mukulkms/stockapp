@@ -4,6 +4,19 @@ export interface BillingGroup {
   _count?: { products: number }
 }
 
+export interface Cheque {
+  id: string
+  groupId: string
+  group?: BillingGroup
+  chequeNumber: string
+  bankName: string | null
+  amount: number
+  chequeDate: string
+  status: 'pending' | 'cleared' | 'bounced' | string
+  note: string | null
+  createdAt: string
+}
+
 export interface Product {
   id: string
   name: string
