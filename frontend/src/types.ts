@@ -90,6 +90,17 @@ export interface CompanyProfitLoss {
   simpleNetProfit: number
 }
 
+export interface MonthlyBreakdownRow {
+  year: number
+  month: number
+  purchaseTotal: number
+  expensesTotal: number
+  salesAmount: number
+  hasSalesEntry: boolean
+  netProfit: number
+  entryId?: string
+}
+
 export interface ProfitLossReport {
   from: string | null
   to: string | null
