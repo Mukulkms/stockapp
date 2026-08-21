@@ -12,6 +12,7 @@ const purchaseInvoicesRoutes = require('./routes/purchaseInvoices')
 const reportsRoutes = require('./routes/reports')
 const monthlySalesRoutes = require('./routes/monthlySales')
 const chequesRoutes = require('./routes/cheques')
+const profitCalcRoutes = require('./routes/profitCalc')
 
 const app = express()
 
@@ -50,6 +51,7 @@ app.use('/api/purchase-invoices', requireAuth, purchaseInvoicesRoutes)
 app.use('/api/reports', requireAuth, reportsRoutes)
 app.use('/api/monthly-sales', requireAuth, monthlySalesRoutes)
 app.use('/api/cheques', requireAuth, chequesRoutes)
+app.use('/api/profit-calc', requireAuth, profitCalcRoutes)
 
 app.use((req, res) => res.status(404).json({ message: 'Route not found' }))
 app.use(errorHandler)

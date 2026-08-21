@@ -3,6 +3,7 @@ import { TrendingUp, TrendingDown, Calendar } from 'lucide-react'
 import { getProfitLossApi } from '../api/endpoints'
 import { ProfitLossReport } from '../types'
 import Amount from '../components/Amount'
+import ProfitCalculator from '../components/ProfitCalculator'
 import { todayISO } from '../lib/helpers'
 
 function firstDayOfMonth(): string {
@@ -193,6 +194,8 @@ export default function Reports() {
                         </div>
                       )}
                     </div>
+
+                    {c.groupId && <ProfitCalculator groupId={c.groupId} />}
                   </div>
                 )
               })}

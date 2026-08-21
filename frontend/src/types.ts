@@ -4,6 +4,21 @@ export interface BillingGroup {
   _count?: { products: number }
 }
 
+export interface ProfitCalculation {
+  id: string
+  groupId: string
+  group?: BillingGroup
+  periodType: string
+  fromMonth: string
+  toMonth: string
+  totalSales: number
+  totalCheques: number
+  stockValue: number
+  netProfit: number
+  createdAt: string
+  updatedAt: string
+}
+
 export interface Cheque {
   id: string
   groupId: string

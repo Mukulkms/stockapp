@@ -46,3 +46,12 @@ export const getChequesApi = () => api.get('/cheques').then(r => r.data.data)
 export const createChequeApi = (data: any) => api.post('/cheques', data).then(r => r.data.data)
 export const updateChequeApi = (id: string, data: any) => api.put(`/cheques/${id}`, data).then(r => r.data.data)
 export const deleteChequeApi = (id: string) => api.delete(`/cheques/${id}`)
+
+// ---- Profit Calculator (sale - cheques + remaining stock, period-wise saved) ----
+export const getProfitCalculationsApi = (groupId?: string) =>
+  api.get('/profit-calc', { params: { groupId } }).then(r => r.data.data)
+export const saveProfitCalculationApi = (data: {
+  groupId: string; periodType: string; fromMonth: string; toMonth: string
+  totalSales: number; totalCheques: number; stockValue: number
+}) => api.post('/profit-calc', data).then(r => r.data.data)
+export const deleteProfitCalculationApi = (id: string) => api.delete(`/profit-calc/${id}`)
