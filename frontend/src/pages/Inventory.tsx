@@ -132,7 +132,7 @@ export default function Inventory() {
       <div className="flex items-center justify-between mb-6 gap-3 flex-wrap">
         <div>
           <h2 className="font-display font-semibold text-2xl mb-1">Inventory</h2>
-          <p className="text-sm text-gray-500">Har billing group ki alag stock list</p>
+          <p className="text-sm text-haze-500">Har billing group ki alag stock list</p>
         </div>
         <button className="btn btn-accent" onClick={() => setShowNewGroup(true)}>
           <Plus size={14} /> New group
@@ -163,8 +163,8 @@ export default function Inventory() {
             className="group px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-2"
             style={
               activeGroup === g.id
-                ? { background: '#1B2540', color: '#fff' }
-                : { background: '#fff', color: '#3A4566', border: '1px solid #E2E5ED' }
+                ? { background: '#211C4D', color: '#fff' }
+                : { background: '#fff', color: '#4A4380', border: '1px solid #E3DFFA' }
             }
           >
             {g.name} <span className="opacity-60">({g._count?.products ?? 0})</span>
@@ -183,28 +183,28 @@ export default function Inventory() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[760px]">
             <thead>
-              <tr style={{ background: '#F5F6FA', borderBottom: '1px solid #E2E5ED' }}>
-                <th className="text-left px-5 py-3 font-medium text-gray-500">Product</th>
-                <th className="text-left px-5 py-3 font-medium text-gray-500">Unit</th>
-                <th className="text-left px-5 py-3 font-medium text-gray-500">Cost price</th>
-                <th className="text-left px-5 py-3 font-medium text-gray-500">Margin %</th>
-                <th className="text-left px-5 py-3 font-medium text-gray-500">Selling rate</th>
-                <th className="text-left px-5 py-3 font-medium text-gray-500">Stock</th>
+              <tr style={{ background: '#F5F3FF', borderBottom: '1px solid #E3DFFA' }}>
+                <th className="text-left px-5 py-3 font-medium text-haze-500">Product</th>
+                <th className="text-left px-5 py-3 font-medium text-haze-500">Unit</th>
+                <th className="text-left px-5 py-3 font-medium text-haze-500">Cost price</th>
+                <th className="text-left px-5 py-3 font-medium text-haze-500">Margin %</th>
+                <th className="text-left px-5 py-3 font-medium text-haze-500">Selling rate</th>
+                <th className="text-left px-5 py-3 font-medium text-haze-500">Stock</th>
                 <th className="px-5 py-3"></th>
               </tr>
             </thead>
             <tbody>
               {pageItems.map(p => (
-                <tr key={p.id} style={{ borderBottom: '1px solid #EEF0F6' }}>
+                <tr key={p.id} style={{ borderBottom: '1px solid #EDEAFB' }}>
                   <td className="px-5 py-3 font-medium">{p.name}</td>
-                  <td className="px-5 py-3 text-gray-500">{p.unit}</td>
+                  <td className="px-5 py-3 text-haze-500">{p.unit}</td>
                   <td className="px-5 py-3"><Amount value={p.costPrice} /></td>
                   <td className="px-5 py-3">{p.marginPercent ?? 0}%</td>
                   <td className="px-5 py-3"><Amount value={p.sellingPrice} /></td>
                   <td className="px-5 py-3">
                     <span className="badge" style={{
                       background: p.stockQty <= 5 ? '#FEF2F2' : '#EDFBF6',
-                      color: p.stockQty <= 5 ? '#DC2626' : '#0E7C6B'
+                      color: p.stockQty <= 5 ? '#DC2626' : '#0D9488'
                     }}>
                       {p.stockQty} {p.unit}
                     </span>
@@ -218,7 +218,7 @@ export default function Inventory() {
                 </tr>
               ))}
               {!loading && products.length === 0 && (
-                <tr><td colSpan={7} className="px-5 py-8 text-center text-gray-400 text-sm">
+                <tr><td colSpan={7} className="px-5 py-8 text-center text-haze-400 text-sm">
                   Is group mein koi product nahi hai. Purchase invoice scan karke add karo.
                 </td></tr>
               )}
@@ -230,7 +230,7 @@ export default function Inventory() {
 
       {/* Edit modal */}
       {editing && (
-        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ background: 'rgba(27,37,64,0.4)' }}>
+        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ background: 'rgba(33,28,77,0.4)' }}>
           <div className="card p-5 sm:p-6 w-full max-w-md" style={{ background: '#fff' }}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-display font-semibold text-lg">Edit product</h3>
@@ -278,10 +278,10 @@ export default function Inventory() {
 
       {/* Delete confirm */}
       {deleteTarget && (
-        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ background: 'rgba(27,37,64,0.4)' }}>
+        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ background: 'rgba(33,28,77,0.4)' }}>
           <div className="card p-5 w-full max-w-sm" style={{ background: '#fff' }}>
             <h3 className="font-display font-semibold text-base mb-2">Product delete karein?</h3>
-            <p className="text-sm text-gray-500 mb-5">
+            <p className="text-sm text-haze-500 mb-5">
               "{deleteTarget.name}" permanently delete ho jayega. Agar yeh product kisi purchase/sales invoice mein use ho chuka hai to delete fail hoga.
             </p>
             <div className="flex gap-2 justify-end">
@@ -301,10 +301,10 @@ export default function Inventory() {
       )}
       {/* Delete group confirm */}
       {deleteGroupTarget && (
-        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ background: 'rgba(27,37,64,0.4)' }}>
+        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ background: 'rgba(33,28,77,0.4)' }}>
           <div className="card p-5 w-full max-w-sm" style={{ background: '#fff' }}>
             <h3 className="font-display font-semibold text-base mb-2">Group delete karein?</h3>
-            <p className="text-sm text-gray-500 mb-5">
+            <p className="text-sm text-haze-500 mb-5">
               "{deleteGroupTarget.name}" permanently delete ho jayega. Agar isme products hain to delete fail hoga — pehle unhe hatana/move karna hoga.
             </p>
             <div className="flex gap-2 justify-end">

@@ -29,14 +29,14 @@ function Shell() {
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} onLogout={handleLogout} />
 
       <div className="md:hidden sticky top-0 z-30 flex items-center justify-between gap-3 px-4 py-3 border-b"
-        style={{ background: '#1B2540', borderColor: '#26315A' }}>
+        style={{ background: '#211C4D', borderColor: '#26315A' }}>
         <div className="flex items-center gap-2.5 min-w-0">
           <button className="text-white/80 hover:text-white shrink-0" onClick={() => setSidebarOpen(true)}>
             <Menu size={22} />
           </button>
           <div
             className="w-7 h-7 rounded-lg shrink-0 flex items-center justify-center font-display font-bold text-xs"
-            style={{ background: '#B5702F', color: '#1B2540' }}
+            style={{ background: '#4F46E5', color: '#211C4D' }}
           >
             DT
           </div>

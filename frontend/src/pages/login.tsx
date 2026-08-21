@@ -29,16 +29,16 @@ export default function Login() {
   return (
     <div
       className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden"
-      style={{ background: '#1B2540' }}
+      style={{ background: '#211C4D' }}
     >
       {/* subtle background accent */}
       <div
         className="absolute -top-24 -right-24 w-72 h-72 rounded-full opacity-10 pointer-events-none"
-        style={{ background: '#B5702F' }}
+        style={{ background: '#4F46E5' }}
       />
       <div
         className="absolute -bottom-32 -left-16 w-80 h-80 rounded-full opacity-[0.07] pointer-events-none"
-        style={{ background: '#B5702F' }}
+        style={{ background: '#7C3AED' }}
       />
 
       <div className="w-full max-w-sm relative">
@@ -46,7 +46,7 @@ export default function Login() {
         <div className="text-center mb-7">
           <div
             className="w-14 h-14 rounded-2xl mx-auto mb-4 flex items-center justify-center font-display font-bold text-lg"
-            style={{ background: '#B5702F', color: '#1B2540' }}
+            style={{ background: 'linear-gradient(135deg, #4F46E5, #7C3AED)', color: '#fff' }}
           >
             DT
           </div>
@@ -57,7 +57,7 @@ export default function Login() {
             <span className="text-[11px] uppercase tracking-wider" style={{ color: '#93A0C4' }}>Powered by</span>
             <span
               className="text-[11px] font-display font-semibold px-2 py-0.5 rounded-full"
-              style={{ background: 'rgba(181,112,47,0.15)', color: '#B5702F' }}
+              style={{ background: 'rgba(79,70,229,0.15)', color: '#4F46E5' }}
             >
               StockBill
             </span>
@@ -66,7 +66,7 @@ export default function Login() {
 
         {/* Login card */}
         <div className="card p-6 sm:p-8" style={{ background: '#fff' }}>
-          <h2 className="font-display font-semibold text-base mb-5" style={{ color: '#1B2540' }}>
+          <h2 className="font-display font-semibold text-base mb-5" style={{ color: '#211C4D' }}>
             Sign in to your ledger
           </h2>
 

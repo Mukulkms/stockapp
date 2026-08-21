@@ -24,7 +24,7 @@ export default function Sidebar({ open, onClose, onLogout }: { open: boolean; on
           <div className="flex items-center gap-3 min-w-0">
             <div
               className="w-9 h-9 rounded-xl shrink-0 flex items-center justify-center font-display font-bold text-sm"
-              style={{ background: '#B5702F', color: '#1B2540' }}
+              style={{ background: 'linear-gradient(135deg, #4F46E5, #7C3AED)', color: '#fff' }}
             >
               DT
             </div>
@@ -34,7 +34,7 @@ export default function Sidebar({ open, onClose, onLogout }: { open: boolean; on
               </h1>
               <span
                 className="inline-block text-[10px] font-display font-semibold mt-0.5 px-1.5 py-0.5 rounded-full"
-                style={{ background: 'rgba(181,112,47,0.15)', color: '#B5702F' }}
+                style={{ background: 'rgba(79,70,229,0.15)', color: '#4F46E5' }}
               >
                 StockBill
               </span>
@@ -54,7 +54,7 @@ export default function Sidebar({ open, onClose, onLogout }: { open: boolean; on
               onClick={onClose}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors ${
-                  isActive ? 'bg-white/10 text-white' : 'text-[#AEB9D6] hover:bg-white/5 hover:text-white'
+                  isActive ? 'bg-[#4F46E5]/25 text-white shadow-[inset_0_0_0_1px_rgba(124,58,237,0.4)]' : 'text-[#AEB9D6] hover:bg-white/5 hover:text-white'
                 }`
               }
             >

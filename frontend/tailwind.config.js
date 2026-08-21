@@ -4,23 +4,28 @@ export default {
   theme: {
     extend: {
       colors: {
-        paper: '#F5F6FA',
+        paper: '#F5F3FF',
         ink: {
-          DEFAULT: '#1B2540',
-          light: '#3A4566',
-          50: '#EEF1FA'
+          DEFAULT: '#211C4D',
+          light: '#4A4380',
+          50: '#EEECFB'
         },
-        copper: {
-          DEFAULT: '#B5702F',
-          dark: '#8C561F'
+        indigo: {
+          DEFAULT: '#4F46E5',
+          dark: '#3730A3'
         },
-        mustard: {
-          DEFAULT: '#B5702F',
-          dark: '#8C561F'
+        violet: {
+          DEFAULT: '#7C3AED',
+          dark: '#5B21B6'
         },
-        success: '#0E7C6B',
+        haze: {
+          50: '#F1EEFC',
+          400: '#9891BC',
+          500: '#6E6693'
+        },
+        success: '#0D9488',
         danger: '#DC2626',
-        line: '#E2E5ED'
+        line: '#E3DFFA'
       },
       fontFamily: {
         display: ['"Space Grotesk"', 'sans-serif'],

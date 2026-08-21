@@ -56,14 +56,14 @@ export default function Dashboard() {
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
       <h2 className="font-display font-semibold text-2xl mb-1">Dashboard</h2>
-      <p className="text-sm text-gray-500 mb-6">Aaj ka overview</p>
+      <p className="text-sm text-haze-500 mb-6">Aaj ka overview</p>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
         {stats.map(s => (
           <div key={s.label} className="card p-4 sm:p-5 min-w-0">
             <div className="flex items-center justify-between mb-3">
               <span className="label mb-0 truncate">{s.label}</span>
-              <s.icon size={16} className={`shrink-0 ${s.alert ? 'text-danger' : 'text-mustard'}`} />
+              <s.icon size={16} className={`shrink-0 ${s.alert ? 'text-danger' : 'text-indigo'}`} />
             </div>
             {s.isAmount ? (
               <Amount value={s.value as number} size="lg" />
@@ -79,7 +79,7 @@ export default function Dashboard() {
       <div className="card p-4 sm:p-5 mb-8">
         <h3 className="font-display font-semibold text-sm mb-4">Stock by group</h3>
         {groupBreakdown.length === 0 ? (
-          <p className="text-xs text-gray-400">{loading ? 'Loading...' : 'Koi group/product nahi hai abhi.'}</p>
+          <p className="text-xs text-haze-400">{loading ? 'Loading...' : 'Koi group/product nahi hai abhi.'}</p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {groupBreakdown.map(g => (
@@ -89,8 +89,8 @@ export default function Dashboard() {
                 className="text-left p-4 rounded-lg border transition-colors"
                 style={
                   activeGroupFilter === g.id
-                    ? { background: '#1B2540', borderColor: '#1B2540', color: '#fff' }
-                    : { background: '#F8F9FC', borderColor: '#E2E5ED', color: '#1B2540' }
+                    ? { background: '#211C4D', borderColor: '#211C4D', color: '#fff' }
+                    : { background: '#F7F5FE', borderColor: '#E3DFFA', color: '#211C4D' }
                 }
               >
                 <div className="flex items-center justify-between mb-2">
@@ -108,7 +108,7 @@ export default function Dashboard() {
       </div>
 
       <div className="card overflow-hidden mb-8">
-        <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 flex-wrap gap-2" style={{ borderBottom: '1px solid #E2E5ED' }}>
+        <div className="flex items-center justify-between px-4 sm:px-5 py-3.5 flex-wrap gap-2" style={{ borderBottom: '1px solid #E3DFFA' }}>
           <h3 className="font-display font-semibold text-sm">
             Item-wise stock {activeGroupFilter !== 'all' && `— ${groupBreakdown.find(g => g.id === activeGroupFilter)?.name}`}
           </h3>
@@ -119,24 +119,24 @@ export default function Dashboard() {
         <div className="overflow-x-auto">
           <table className="w-full text-sm min-w-[560px]">
             <thead>
-              <tr style={{ background: '#F5F6FA', borderBottom: '1px solid #E2E5ED' }}>
-                <th className="text-left px-4 sm:px-5 py-2.5 font-medium text-gray-500">Product</th>
-                <th className="text-left px-4 sm:px-5 py-2.5 font-medium text-gray-500">Group</th>
-                <th className="text-left px-4 sm:px-5 py-2.5 font-medium text-gray-500">Unit</th>
-                <th className="text-left px-4 sm:px-5 py-2.5 font-medium text-gray-500">Stock</th>
-                <th className="text-left px-4 sm:px-5 py-2.5 font-medium text-gray-500">Value</th>
+              <tr style={{ background: '#F5F3FF', borderBottom: '1px solid #E3DFFA' }}>
+                <th className="text-left px-4 sm:px-5 py-2.5 font-medium text-haze-500">Product</th>
+                <th className="text-left px-4 sm:px-5 py-2.5 font-medium text-haze-500">Group</th>
+                <th className="text-left px-4 sm:px-5 py-2.5 font-medium text-haze-500">Unit</th>
+                <th className="text-left px-4 sm:px-5 py-2.5 font-medium text-haze-500">Stock</th>
+                <th className="text-left px-4 sm:px-5 py-2.5 font-medium text-haze-500">Value</th>
               </tr>
             </thead>
             <tbody>
               {pageItems.map(p => (
-                <tr key={p.id} style={{ borderBottom: '1px solid #EEF0F6' }}>
+                <tr key={p.id} style={{ borderBottom: '1px solid #EDEAFB' }}>
                   <td className="px-4 sm:px-5 py-2.5 font-medium">{p.name}</td>
-                  <td className="px-4 sm:px-5 py-2.5 text-gray-500">{p.group?.name || '—'}</td>
-                  <td className="px-4 sm:px-5 py-2.5 text-gray-500">{p.unit}</td>
+                  <td className="px-4 sm:px-5 py-2.5 text-haze-500">{p.group?.name || '—'}</td>
+                  <td className="px-4 sm:px-5 py-2.5 text-haze-500">{p.unit}</td>
                   <td className="px-4 sm:px-5 py-2.5">
                     <span className="badge" style={{
                       background: p.stockQty <= 5 ? '#FEF2F2' : '#EDFBF6',
-                      color: p.stockQty <= 5 ? '#DC2626' : '#0E7C6B'
+                      color: p.stockQty <= 5 ? '#DC2626' : '#0D9488'
                     }}>
                       {p.stockQty} {p.unit}
                     </span>
@@ -145,7 +145,7 @@ export default function Dashboard() {
                 </tr>
               ))}
               {!loading && filteredProducts.length === 0 && (
-                <tr><td colSpan={5} className="px-5 py-8 text-center text-gray-400 text-sm">
+                <tr><td colSpan={5} className="px-5 py-8 text-center text-haze-400 text-sm">
                   Koi product nahi mila.
                 </td></tr>
               )}
@@ -160,15 +160,15 @@ export default function Dashboard() {
           <h3 className="font-display font-semibold text-sm mb-4">Recent purchases</h3>
           <div className="space-y-3">
             {purchases.slice(0, 6).map(inv => (
-              <div key={inv.id} className="flex items-center justify-between text-sm pb-3 gap-3" style={{ borderBottom: '1px solid #EEF0F6' }}>
+              <div key={inv.id} className="flex items-center justify-between text-sm pb-3 gap-3" style={{ borderBottom: '1px solid #EDEAFB' }}>
                 <div className="min-w-0">
                   <p className="font-medium truncate">{inv.vendorName || 'Unknown vendor'}</p>
-                  <p className="text-xs text-gray-500 truncate">{inv.invoiceNumber || '—'} · {inv.billDate.split('T')[0]}</p>
+                  <p className="text-xs text-haze-500 truncate">{inv.invoiceNumber || '—'} · {inv.billDate.split('T')[0]}</p>
                 </div>
                 <Amount value={inv.totalAmount} />
               </div>
             ))}
-            {purchases.length === 0 && <p className="text-xs text-gray-400">Koi purchase invoice nahi bana abhi tak.</p>}
+            {purchases.length === 0 && <p className="text-xs text-haze-400">Koi purchase invoice nahi bana abhi tak.</p>}
           </div>
         </div>
 
@@ -176,17 +176,17 @@ export default function Dashboard() {
           <h3 className="font-display font-semibold text-sm mb-4">Low stock alert</h3>
           <div className="space-y-3">
             {lowStock.slice(0, 6).map(p => (
-              <div key={p.id} className="flex items-center justify-between text-sm pb-3 gap-3" style={{ borderBottom: '1px solid #EEF0F6' }}>
+              <div key={p.id} className="flex items-center justify-between text-sm pb-3 gap-3" style={{ borderBottom: '1px solid #EDEAFB' }}>
                 <div className="min-w-0">
                   <p className="font-medium truncate">{p.name}</p>
-                  <p className="text-xs text-gray-500 truncate">{p.group?.name}</p>
+                  <p className="text-xs text-haze-500 truncate">{p.group?.name}</p>
                 </div>
                 <span className="badge shrink-0" style={{ background: '#FEF2F2', color: '#DC2626' }}>
                   {p.stockQty} {p.unit} left
                 </span>
               </div>
             ))}
-            {lowStock.length === 0 && <p className="text-xs text-gray-400">Sab products ka stock theek hai ✓</p>}
+            {lowStock.length === 0 && <p className="text-xs text-haze-400">Sab products ka stock theek hai ✓</p>}
           </div>
         </div>
       </div>

@@ -15,8 +15,8 @@ export default function Pagination({ page, totalItems, pageSize, onPageChange }:
   const to = Math.min(page * pageSize, totalItems)
 
   return (
-    <div className="flex items-center justify-between gap-3 px-4 py-3 flex-wrap" style={{ borderTop: '1px solid #E2E5ED' }}>
-      <span className="text-xs text-gray-500">{from}–{to} of {totalItems}</span>
+    <div className="flex items-center justify-between gap-3 px-4 py-3 flex-wrap" style={{ borderTop: '1px solid #E3DFFA' }}>
+      <span className="text-xs text-haze-500">{from}–{to} of {totalItems}</span>
       <div className="flex items-center gap-1">
         <button
           className="btn btn-sm"
@@ -25,7 +25,7 @@ export default function Pagination({ page, totalItems, pageSize, onPageChange }:
         >
           <ChevronLeft size={13} />
         </button>
-        <span className="text-xs text-gray-500 px-2">Page {page} / {totalPages}</span>
+        <span className="text-xs text-haze-500 px-2">Page {page} / {totalPages}</span>
         <button
           className="btn btn-sm"
           onClick={() => onPageChange(Math.min(totalPages, page + 1))}

@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from 'react'
-import { Trash2, Pencil, Eye, X, Check, Loader2 } from 'lucide-react'
+import { Trash2, Pencil, Eye, X, Check, Loader2, Folder, ChevronDown, ChevronRight, Search, FileStack } from 'lucide-react'
 import toast from 'react-hot-toast'
 import {
   getPurchaseInvoicesApi, updatePurchaseInvoiceApi, deletePurchaseInvoiceApi,
@@ -8,10 +8,6 @@ import {
 import { PurchaseInvoice } from '../types'
 import Amount from '../components/Amount'
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal'
-import Pagination from '../components/Pagination'
-import { todayISO } from '../lib/helpers'
-
-const PAGE_SIZE = 10
 
 interface EditItem {
   productId: string
@@ -20,6 +16,15 @@ interface EditItem {
   costPrice: number
   groupId?: string
 }
+
+// Folder accent cycle — indigo / violet / blue family, assigned consistently per group
+const FOLDER_COLORS = ['#4F46E5', '#7C3AED', '#2563EB', '#0EA5E9', '#5B21B6', '#0D9488']
+function colorForGroup(groupId: string, allIds: string[]) {
+  const idx = allIds.indexOf(groupId)
+  return FOLDER_COLORS[idx % FOLDER_COLORS.length]
+}
+
+const SHOW_INCREMENT = 8
 
 export default function PurchaseInvoicesList() {
   const [invoices, setInvoices] = useState<PurchaseInvoice[]>([])
@@ -33,39 +38,62 @@ export default function PurchaseInvoicesList() {
   const [busyDelete, setBusyDelete] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<string | null>(null)
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
-  const [page, setPage] = useState(1)
   const [search, setSearch] = useState('')
-  const [fromDate, setFromDate] = useState('')
-  const [toDate, setToDate] = useState('')
+  const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
+  const [showCount, setShowCount] = useState<Record<string, number>>({})
 
   const load = () => {
     setLoading(true)
-    getPurchaseInvoicesApi().then(list => { setInvoices(list); setPage(1) }).finally(() => setLoading(false))
+    getPurchaseInvoicesApi().then(list => setInvoices(list)).finally(() => setLoading(false))
   }
 
   useEffect(() => { load() }, [])
 
   const filteredInvoices = useMemo(() => {
-    return invoices.filter(inv => {
-      if (search) {
-        const q = search.toLowerCase()
-        const hay = `${inv.vendorName || ''} ${inv.invoiceNumber || ''} ${inv.vendorGSTIN || ''}`.toLowerCase()
-        if (!hay.includes(q)) return false
-      }
-      const d = inv.billDate.split('T')[0]
-      if (fromDate && d < fromDate) return false
-      if (toDate && d > toDate) return false
-      return true
+    const q = search.trim().toLowerCase()
+    if (!q) return invoices
+    return invoices.filter(inv =>
+      (inv.vendorName || '').toLowerCase().includes(q) ||
+      (inv.invoiceNumber || '').toLowerCase().includes(q) ||
+      (inv.vendorGSTIN || '').toLowerCase().includes(q)
+    )
+  }, [invoices, search])
+
+  // Group invoices folder-wise by the billing group of their items (usually one group per invoice)
+  const folders = useMemo(() => {
+    const map = new Map<string, { groupId: string; groupName: string; invoices: PurchaseInvoice[]; total: number }>()
+    for (const inv of filteredInvoices) {
+      const firstItem = inv.items?.[0]
+      const groupId = firstItem?.product?.groupId || 'unassigned'
+      const groupName = firstItem?.product?.group?.name || 'Unassigned'
+      const entry = map.get(groupId) || { groupId, groupName, invoices: [], total: 0 }
+      entry.invoices.push(inv)
+      entry.total += inv.totalAmount
+      map.set(groupId, entry)
+    }
+    return Array.from(map.values()).sort((a, b) => b.total - a.total)
+  }, [filteredInvoices])
+
+  const folderIds = useMemo(() => folders.map(f => f.groupId), [folders])
+
+  const toggleFolder = (groupId: string) => {
+    setCollapsed(prev => {
+      const next = new Set(prev)
+      next.has(groupId) ? next.delete(groupId) : next.add(groupId)
+      return next
     })
-  }, [invoices, search, fromDate, toDate])
-
-  useEffect(() => { setPage(1) }, [search, fromDate, toDate])
-
-  const allSelected = filteredInvoices.length > 0 && selected.size === filteredInvoices.length
-
-  const toggleAll = () => {
-    setSelected(allSelected ? new Set() : new Set(filteredInvoices.map(i => i.id)))
   }
+
+  const toggleAllInFolder = (list: PurchaseInvoice[]) => {
+    const ids = list.map(i => i.id)
+    const allIn = ids.every(id => selected.has(id))
+    setSelected(prev => {
+      const next = new Set(prev)
+      ids.forEach(id => allIn ? next.delete(id) : next.add(id))
+      return next
+    })
+  }
+
   const toggleOne = (id: string) => {
     setSelected(prev => {
       const next = new Set(prev)
@@ -109,14 +137,13 @@ export default function PurchaseInvoicesList() {
     setEditing(inv)
     setEditFields({
       invoiceNumber: inv.invoiceNumber || '',
+      billDate: new Date(inv.billDate).toISOString().split('T')[0],
       vendorName: inv.vendorName || '',
       vendorGSTIN: inv.vendorGSTIN || '',
       vendorPhone: inv.vendorPhone || '',
       vendorAddress: inv.vendorAddress || '',
-      billDate: inv.billDate.split('T')[0],
       discountAmount: inv.discountAmount || 0,
       taxAmount: inv.taxAmount || 0,
-      gstInclusive: !!inv.gstInclusive,
       totalAmount: inv.totalAmount || 0
     })
     setEditItems(inv.items.map(it => ({
@@ -163,8 +190,6 @@ export default function PurchaseInvoicesList() {
     [editItems]
   )
 
-  const pageItems = filteredInvoices.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
-
   return (
     <div className="p-4 sm:p-6 lg:p-8 max-w-6xl mx-auto">
       <div className="flex items-center justify-between mb-1 gap-3 flex-wrap">
@@ -177,84 +202,125 @@ export default function PurchaseInvoicesList() {
           </button>
         )}
       </div>
-      <p className="text-sm text-gray-500 mb-4">Purane bills dekho, edit karo, ya ek saath delete karo</p>
+      <p className="text-sm text-haze-500 mb-5">Company/group-wise folders mein dekho, edit karo, ya ek saath delete karo</p>
 
-      <div className="card p-4 mb-6">
-        <div className="flex flex-wrap items-end gap-3">
-          <div className="flex-1 min-w-[180px]">
-            <label className="label mb-1">Search (vendor / invoice # / GSTIN)</label>
-            <input className="input py-1.5" placeholder="e.g. Pulse or INV-102"
-              value={search} onChange={e => setSearch(e.target.value)} />
-          </div>
-          <div>
-            <label className="label mb-1">From</label>
-            <input className="input py-1.5" type="date" value={fromDate} max={toDate || undefined}
-              onChange={e => setFromDate(e.target.value)} />
-          </div>
-          <div>
-            <label className="label mb-1">To</label>
-            <input className="input py-1.5" type="date" value={toDate} min={fromDate || undefined}
-              onChange={e => setToDate(e.target.value)} />
-          </div>
-          {(search || fromDate || toDate) && (
-            <button className="btn btn-sm" onClick={() => { setSearch(''); setFromDate(''); setToDate('') }}>
-              Clear filters
-            </button>
-          )}
-        </div>
+      {/* Search */}
+      <div className="relative mb-5" style={{ maxWidth: 380 }}>
+        <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-haze-400" />
+        <input
+          className="input pl-9"
+          placeholder="Vendor, invoice # ya GSTIN se search karo..."
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
       </div>
 
       {loading ? (
-        <div className="text-sm text-gray-400">Loading...</div>
+        <div className="text-sm text-haze-400">Loading...</div>
       ) : invoices.length === 0 ? (
-        <div className="text-sm text-gray-400">Koi purchase invoice nahi hai abhi</div>
-      ) : filteredInvoices.length === 0 ? (
-        <div className="text-sm text-gray-400">Filter se koi invoice match nahi hui</div>
+        <div className="text-sm text-haze-400">Koi purchase invoice nahi hai abhi</div>
+      ) : folders.length === 0 ? (
+        <div className="text-sm text-haze-400">Search se koi invoice nahi mila</div>
       ) : (
-        <div className="card overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm min-w-[720px]">
-              <thead>
-                <tr style={{ background: '#F5F6FA', borderBottom: '1px solid #E2E5ED' }}>
-                  <th className="px-4 py-2.5"><input type="checkbox" checked={allSelected} onChange={toggleAll} /></th>
-                  <th className="text-left px-4 py-2.5 font-medium text-gray-500">Date</th>
-                  <th className="text-left px-4 py-2.5 font-medium text-gray-500">Vendor</th>
-                  <th className="text-left px-4 py-2.5 font-medium text-gray-500">Invoice #</th>
-                  <th className="text-left px-4 py-2.5 font-medium text-gray-500">GSTIN</th>
-                  <th className="text-left px-4 py-2.5 font-medium text-gray-500">Items</th>
-                  <th className="text-left px-4 py-2.5 font-medium text-gray-500">Total</th>
-                  <th className="px-4 py-2.5"></th>
-                </tr>
-              </thead>
-              <tbody>
-                {pageItems.map(inv => (
-                  <tr key={inv.id} style={{ borderBottom: '1px solid #EEF0F6' }}>
-                    <td className="px-4 py-2"><input type="checkbox" checked={selected.has(inv.id)} onChange={() => toggleOne(inv.id)} /></td>
-                    <td className="px-4 py-2">{new Date(inv.billDate).toLocaleDateString('en-IN')}</td>
-                    <td className="px-4 py-2">{inv.vendorName || '—'}</td>
-                    <td className="px-4 py-2">{inv.invoiceNumber || '—'}</td>
-                    <td className="px-4 py-2">{inv.vendorGSTIN || '—'}</td>
-                    <td className="px-4 py-2">{inv.items.length}</td>
-                    <td className="px-4 py-2"><Amount value={inv.totalAmount} /></td>
-                    <td className="px-4 py-2">
-                      <div className="flex gap-2">
-                        <button className="btn btn-sm" onClick={() => setViewing(inv)}><Eye size={13} /></button>
-                        <button className="btn btn-sm" onClick={() => openEdit(inv)}><Pencil size={13} /></button>
-                        <button className="btn btn-sm" style={{ color: '#DC2626' }} onClick={() => setDeleteTarget(inv.id)}><Trash2 size={13} /></button>
+        <div className="space-y-4">
+          {folders.map(folder => {
+            const isOpen = !collapsed.has(folder.groupId)
+            const accent = colorForGroup(folder.groupId, folderIds)
+            const visibleCount = showCount[folder.groupId] || SHOW_INCREMENT
+            const visibleInvoices = folder.invoices.slice(0, visibleCount)
+            const allSelectedInFolder = folder.invoices.length > 0 && folder.invoices.every(i => selected.has(i.id))
+
+            return (
+              <div key={folder.groupId} className="card overflow-hidden">
+                {/* Folder header */}
+                <button
+                  className="w-full flex items-center justify-between gap-3 px-4 sm:px-5 py-3.5 flex-wrap text-left"
+                  onClick={() => toggleFolder(folder.groupId)}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    {isOpen ? <ChevronDown size={16} className="text-haze-400 shrink-0" /> : <ChevronRight size={16} className="text-haze-400 shrink-0" />}
+                    <div
+                      className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
+                      style={{ background: `${accent}1A` }}
+                    >
+                      <Folder size={17} style={{ color: accent }} />
+                    </div>
+                    <div className="min-w-0">
+                      <h3 className="font-display font-semibold text-sm truncate">{folder.groupName}</h3>
+                      <span className="text-xs text-haze-500">{folder.invoices.length} invoice{folder.invoices.length !== 1 ? 's' : ''}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-4 shrink-0">
+                    <div className="text-right">
+                      <div className="text-[10px] text-haze-500 uppercase tracking-wide">Total</div>
+                      <Amount value={folder.total} />
+                    </div>
+                  </div>
+                </button>
+
+                {isOpen && (
+                  <div style={{ borderTop: '1px solid #E3DFFA' }}>
+                    <div className="flex items-center gap-2 px-4 sm:px-5 py-2.5" style={{ background: '#F7F5FE' }}>
+                      <input type="checkbox" checked={allSelectedInFolder} onChange={() => toggleAllInFolder(folder.invoices)} />
+                      <span className="text-xs text-haze-500">Select all in {folder.groupName}</span>
+                    </div>
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm min-w-[720px]">
+                        <thead>
+                          <tr style={{ background: '#F5F3FF', borderBottom: '1px solid #E3DFFA' }}>
+                            <th className="px-4 py-2.5"></th>
+                            <th className="text-left px-4 py-2.5 font-medium text-haze-500">Date</th>
+                            <th className="text-left px-4 py-2.5 font-medium text-haze-500">Vendor</th>
+                            <th className="text-left px-4 py-2.5 font-medium text-haze-500">Invoice #</th>
+                            <th className="text-left px-4 py-2.5 font-medium text-haze-500">GSTIN</th>
+                            <th className="text-left px-4 py-2.5 font-medium text-haze-500">Items</th>
+                            <th className="text-left px-4 py-2.5 font-medium text-haze-500">Total</th>
+                            <th className="px-4 py-2.5"></th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {visibleInvoices.map(inv => (
+                            <tr key={inv.id} style={{ borderBottom: '1px solid #EDEAFB' }}>
+                              <td className="px-4 py-2"><input type="checkbox" checked={selected.has(inv.id)} onChange={() => toggleOne(inv.id)} /></td>
+                              <td className="px-4 py-2">{new Date(inv.billDate).toLocaleDateString('en-IN')}</td>
+                              <td className="px-4 py-2">{inv.vendorName || '—'}</td>
+                              <td className="px-4 py-2">{inv.invoiceNumber || '—'}</td>
+                              <td className="px-4 py-2">{inv.vendorGSTIN || '—'}</td>
+                              <td className="px-4 py-2">{inv.items.length}</td>
+                              <td className="px-4 py-2"><Amount value={inv.totalAmount} /></td>
+                              <td className="px-4 py-2">
+                                <div className="flex gap-2">
+                                  <button className="btn btn-sm" onClick={() => setViewing(inv)}><Eye size={13} /></button>
+                                  <button className="btn btn-sm" onClick={() => openEdit(inv)}><Pencil size={13} /></button>
+                                  <button className="btn btn-sm" style={{ color: '#DC2626' }} onClick={() => setDeleteTarget(inv.id)}><Trash2 size={13} /></button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                    {folder.invoices.length > visibleCount && (
+                      <div className="px-4 sm:px-5 py-3">
+                        <button
+                          className="btn btn-sm"
+                          onClick={() => setShowCount(prev => ({ ...prev, [folder.groupId]: visibleCount + SHOW_INCREMENT }))}
+                        >
+                          <FileStack size={13} /> Aur dikhao ({folder.invoices.length - visibleCount} baaki)
+                        </button>
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-          <Pagination page={page} totalItems={filteredInvoices.length} pageSize={PAGE_SIZE} onPageChange={setPage} />
+                    )}
+                  </div>
+                )}
+              </div>
+            )
+          })}
         </div>
       )}
 
       {/* View (read-only) modal */}
       {viewing && (
-        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ background: 'rgba(27,37,64,0.4)' }}>
+        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ background: 'rgba(33,28,77,0.4)' }}>
           <div className="card p-5 sm:p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto" style={{ background: '#fff' }}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-display font-semibold text-lg">Invoice details</h3>
@@ -262,29 +328,28 @@ export default function PurchaseInvoicesList() {
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm mb-4">
-              <div><span className="text-gray-500">Vendor: </span>{viewing.vendorName || '—'}</div>
-              <div><span className="text-gray-500">Invoice #: </span>{viewing.invoiceNumber || '—'}</div>
-              <div><span className="text-gray-500">GSTIN: </span>{viewing.vendorGSTIN || '—'}</div>
-              <div><span className="text-gray-500">Phone: </span>{viewing.vendorPhone || '—'}</div>
-              <div className="sm:col-span-2"><span className="text-gray-500">Address: </span>{viewing.vendorAddress || '—'}</div>
-              <div><span className="text-gray-500">Date: </span>{new Date(viewing.billDate).toLocaleDateString('en-IN')}</div>
-              <div><span className="text-gray-500">GST: </span>{viewing.gstInclusive ? 'Rate mein included' : 'Alag se laga hai'}</div>
+              <div><span className="text-haze-500">Vendor: </span>{viewing.vendorName || '—'}</div>
+              <div><span className="text-haze-500">Invoice #: </span>{viewing.invoiceNumber || '—'}</div>
+              <div><span className="text-haze-500">GSTIN: </span>{viewing.vendorGSTIN || '—'}</div>
+              <div><span className="text-haze-500">Phone: </span>{viewing.vendorPhone || '—'}</div>
+              <div className="sm:col-span-2"><span className="text-haze-500">Address: </span>{viewing.vendorAddress || '—'}</div>
+              <div><span className="text-haze-500">Date: </span>{new Date(viewing.billDate).toLocaleDateString('en-IN')}</div>
             </div>
 
             <div className="card overflow-hidden mb-4">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm min-w-[420px]">
                   <thead>
-                    <tr style={{ background: '#F5F6FA', borderBottom: '1px solid #E2E5ED' }}>
-                      <th className="text-left px-3 py-2 font-medium text-gray-500">Product</th>
-                      <th className="text-left px-3 py-2 font-medium text-gray-500">Qty</th>
-                      <th className="text-left px-3 py-2 font-medium text-gray-500">Cost</th>
-                      <th className="text-left px-3 py-2 font-medium text-gray-500">Amount</th>
+                    <tr style={{ background: '#F5F3FF', borderBottom: '1px solid #E3DFFA' }}>
+                      <th className="text-left px-3 py-2 font-medium text-haze-500">Product</th>
+                      <th className="text-left px-3 py-2 font-medium text-haze-500">Qty</th>
+                      <th className="text-left px-3 py-2 font-medium text-haze-500">Cost</th>
+                      <th className="text-left px-3 py-2 font-medium text-haze-500">Amount</th>
                     </tr>
                   </thead>
                   <tbody>
                     {viewing.items.map(it => (
-                      <tr key={it.id} style={{ borderBottom: '1px solid #EEF0F6' }}>
+                      <tr key={it.id} style={{ borderBottom: '1px solid #EDEAFB' }}>
                         <td className="px-3 py-2">{it.product?.name || '—'}</td>
                         <td className="px-3 py-2">{it.qty} {it.product?.unit}</td>
                         <td className="px-3 py-2"><Amount value={it.costPrice} /></td>
@@ -297,16 +362,16 @@ export default function PurchaseInvoicesList() {
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-              <div><span className="text-gray-500 block text-xs">Sub total</span><Amount value={viewing.subTotal} /></div>
-              <div><span className="text-gray-500 block text-xs">Discount</span><Amount value={viewing.discountAmount} /></div>
-              <div><span className="text-gray-500 block text-xs">Tax</span><Amount value={viewing.taxAmount} /></div>
-              <div><span className="text-gray-500 block text-xs">Total</span><Amount value={viewing.totalAmount} /></div>
+              <div><span className="text-haze-500 block text-xs">Sub total</span><Amount value={viewing.subTotal} /></div>
+              <div><span className="text-haze-500 block text-xs">Discount</span><Amount value={viewing.discountAmount} /></div>
+              <div><span className="text-haze-500 block text-xs">Tax</span><Amount value={viewing.taxAmount} /></div>
+              <div><span className="text-haze-500 block text-xs">Total</span><Amount value={viewing.totalAmount} /></div>
             </div>
 
             {viewing.imageUrl && (
               <div className="mt-4">
                 <span className="label">Bill image</span>
-                <img src={viewing.imageUrl} alt="Invoice" className="rounded-lg border max-w-full" style={{ borderColor: '#E2E5ED' }} />
+                <img src={viewing.imageUrl} alt="Invoice" className="rounded-lg border max-w-full" style={{ borderColor: '#E3DFFA' }} />
               </div>
             )}
           </div>
@@ -315,7 +380,7 @@ export default function PurchaseInvoicesList() {
 
       {/* Edit modal */}
       {editing && (
-        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ background: 'rgba(27,37,64,0.4)' }}>
+        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ background: 'rgba(33,28,77,0.4)' }}>
           <div className="card p-5 sm:p-6 w-full max-w-3xl max-h-[90vh] overflow-y-auto" style={{ background: '#fff' }}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="font-display font-semibold text-lg">Edit Purchase Invoice</h3>
@@ -335,7 +400,7 @@ export default function PurchaseInvoicesList() {
               </div>
               <div>
                 <label className="label">Bill date</label>
-                <input className="input" type="date" value={editFields.billDate} max={todayISO()}
+                <input className="input" type="date" value={editFields.billDate}
                   onChange={e => setEditFields({ ...editFields, billDate: e.target.value })} />
               </div>
               <div>
@@ -359,16 +424,16 @@ export default function PurchaseInvoicesList() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm min-w-[480px]">
                   <thead>
-                    <tr style={{ background: '#F5F6FA', borderBottom: '1px solid #E2E5ED' }}>
-                      <th className="text-left px-3 py-2 font-medium text-gray-500">Product</th>
-                      <th className="text-left px-3 py-2 font-medium text-gray-500">Qty</th>
-                      <th className="text-left px-3 py-2 font-medium text-gray-500">Cost</th>
+                    <tr style={{ background: '#F5F3FF', borderBottom: '1px solid #E3DFFA' }}>
+                      <th className="text-left px-3 py-2 font-medium text-haze-500">Product</th>
+                      <th className="text-left px-3 py-2 font-medium text-haze-500">Qty</th>
+                      <th className="text-left px-3 py-2 font-medium text-haze-500">Cost</th>
                       <th className="px-3 py-2"></th>
                     </tr>
                   </thead>
                   <tbody>
                     {editItems.map((it, i) => (
-                      <tr key={it.productId + i} style={{ borderBottom: '1px solid #EEF0F6' }}>
+                      <tr key={it.productId + i} style={{ borderBottom: '1px solid #EDEAFB' }}>
                         <td className="px-3 py-2">{it.name}</td>
                         <td className="px-3 py-2">
                           <input className="input py-1.5 w-20" type="number" min={0} value={it.qty}
@@ -387,12 +452,12 @@ export default function PurchaseInvoicesList() {
                 </table>
               </div>
             </div>
-            <p className="text-xs text-gray-400 mb-4">Naya item add karna ho to Purchase page se naya invoice banao. Yaha existing items ki qty/cost edit ya remove kar sakte ho.</p>
+            <p className="text-xs text-haze-400 mb-4">Naya item add karna ho to Purchase page se naya invoice banao. Yaha existing items ki qty/cost edit ya remove kar sakte ho.</p>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-3">
               <div>
                 <label className="label">Items total (calculated)</label>
-                <div className="input py-1.5 bg-gray-50 flex items-center"><Amount value={editSubTotal} /></div>
+                <div className="input py-1.5 bg-haze-50 flex items-center"><Amount value={editSubTotal} /></div>
               </div>
               <div>
                 <label className="label">Discount / Less</label>
@@ -404,14 +469,6 @@ export default function PurchaseInvoicesList() {
                 <input className="input" type="number" min={0} value={editFields.taxAmount}
                   onChange={e => setEditFields({ ...editFields, taxAmount: Math.max(0, parseFloat(e.target.value) || 0) })} />
               </div>
-            </div>
-            <div className="mb-3">
-              <label className="label">GST rate mein hi included hai ya alag se laga hai?</label>
-              <select className="input" value={editFields.gstInclusive ? 'inclusive' : 'exclusive'}
-                onChange={e => setEditFields({ ...editFields, gstInclusive: e.target.value === 'inclusive' })}>
-                <option value="exclusive">GST alag se laga hai</option>
-                <option value="inclusive">GST already rate mein included hai</option>
-              </select>
             </div>
             <div className="mb-5">
               <label className="label">Actual bill amount (final, editable)</label>
