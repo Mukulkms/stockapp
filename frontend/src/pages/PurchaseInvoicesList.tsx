@@ -1,12 +1,14 @@
 import { useEffect, useState, useMemo } from 'react'
-import { Trash2, Pencil, Eye, X, Check, Loader2, Folder, ChevronDown, ChevronRight, Search, FileStack } from 'lucide-react'
+import { Trash2, Pencil, Eye, X, Check, Loader2, ChevronDown, ChevronRight, Search, FileStack, FileSpreadsheet } from 'lucide-react'
 import toast from 'react-hot-toast'
+import * as XLSX from 'xlsx'
 import {
   getPurchaseInvoicesApi, updatePurchaseInvoiceApi, deletePurchaseInvoiceApi,
-  bulkDeletePurchaseInvoicesApi
+  bulkDeletePurchaseInvoicesApi, createGroupApi, updateGroupApi, updateProductApi
 } from '../api/endpoints'
 import { PurchaseInvoice } from '../types'
 import Amount from '../components/Amount'
+import FolderIcon from '../components/FolderIcon'
 import ConfirmDeleteModal from '../components/ConfirmDeleteModal'
 
 interface EditItem {
@@ -41,6 +43,9 @@ export default function PurchaseInvoicesList() {
   const [search, setSearch] = useState('')
   const [collapsed, setCollapsed] = useState<Set<string>>(new Set())
   const [showCount, setShowCount] = useState<Record<string, number>>({})
+  const [renamingId, setRenamingId] = useState<string | null>(null)
+  const [renameValue, setRenameValue] = useState('')
+  const [renaming, setRenaming] = useState(false)
 
   const load = () => {
     setLoading(true)
@@ -100,6 +105,59 @@ export default function PurchaseInvoicesList() {
       next.has(id) ? next.delete(id) : next.add(id)
       return next
     })
+  }
+
+  const startRename = (folder: { groupId: string; groupName: string }) => {
+    setRenamingId(folder.groupId)
+    setRenameValue(folder.groupName === 'Unassigned' ? '' : folder.groupName)
+  }
+
+  const cancelRename = () => { setRenamingId(null); setRenameValue('') }
+
+  const saveRename = async (folder: { groupId: string; groupName: string; invoices: PurchaseInvoice[] }) => {
+    const name = renameValue.trim()
+    if (!name) { toast.error('Naam khaali nahi ho sakta'); return }
+    setRenaming(true)
+    try {
+      if (folder.groupId === 'unassigned') {
+        // Koi asli group nahi hai — naya group banao aur is bucket ke invoices ke
+        // products (jo abhi bhi maujood hain) ko usme move kar do.
+        const newGroup = await createGroupApi(name)
+        const productIds = new Set<string>()
+        folder.invoices.forEach(inv => inv.items?.forEach(it => { if (it.productId) productIds.add(it.productId) }))
+        await Promise.all(Array.from(productIds).map(pid => updateProductApi(pid, { groupId: newGroup.id })))
+        toast.success(`"${name}" company ban gayi, invoices move ho gaye`)
+      } else {
+        await updateGroupApi(folder.groupId, name)
+        toast.success('Company ka naam update ho gaya')
+      }
+      cancelRename()
+      load()
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || 'Rename nahi hua')
+    } finally {
+      setRenaming(false)
+    }
+  }
+
+  const downloadFolderExcel = (folder: { groupName: string; invoices: PurchaseInvoice[]; total: number }) => {
+    const rows = [...folder.invoices]
+      .sort((a, b) => new Date(a.billDate).getTime() - new Date(b.billDate).getTime())
+      .map(inv => ({
+        Date: new Date(inv.billDate).toLocaleDateString('en-IN'),
+        Vendor: inv.vendorName || '—',
+        'Invoice #': inv.invoiceNumber || '—',
+        GSTIN: inv.vendorGSTIN || '—',
+        Items: inv.items.length,
+        'Amount (₹)': inv.totalAmount
+      }))
+    rows.push({ Date: '', Vendor: '', 'Invoice #': '', GSTIN: '', Items: '' as any, 'Amount (₹)': folder.total })
+    const ws = XLSX.utils.json_to_sheet(rows)
+    ws['!cols'] = [{ wch: 12 }, { wch: 22 }, { wch: 16 }, { wch: 18 }, { wch: 8 }, { wch: 14 }]
+    const wb = XLSX.utils.book_new()
+    XLSX.utils.book_append_sheet(wb, ws, folder.groupName.slice(0, 31) || 'Invoices')
+    XLSX.writeFile(wb, `${folder.groupName.replace(/[^a-z0-9]+/gi, '_')}_purchase_invoices.xlsx`)
+    toast.success('Excel download ho gayi')
   }
 
   const confirmDeleteOne = async (revertStock: boolean) => {
@@ -233,33 +291,68 @@ export default function PurchaseInvoicesList() {
             return (
               <div key={folder.groupId} className="card overflow-hidden">
                 {/* Folder header */}
-                <button
-                  className="w-full flex items-center justify-between gap-3 px-4 sm:px-5 py-3.5 flex-wrap text-left"
-                  onClick={() => toggleFolder(folder.groupId)}
-                >
-                  <div className="flex items-center gap-3 min-w-0">
+                <div className="w-full flex items-center justify-between gap-3 px-4 sm:px-5 py-3.5 flex-wrap">
+                  <button
+                    className="flex items-center gap-3 min-w-0 text-left flex-1"
+                    onClick={() => toggleFolder(folder.groupId)}
+                  >
                     {isOpen ? <ChevronDown size={16} className="text-haze-400 shrink-0" /> : <ChevronRight size={16} className="text-haze-400 shrink-0" />}
-                    <div
-                      className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-                      style={{ background: `${accent}1A` }}
-                    >
-                      <Folder size={17} style={{ color: accent }} />
-                    </div>
+                    <FolderIcon color={accent} size={36} open={isOpen} />
                     <div className="min-w-0">
-                      <h3 className="font-display font-semibold text-sm truncate">{folder.groupName}</h3>
+                      {renamingId === folder.groupId ? (
+                        <div className="flex items-center gap-1.5" onClick={e => e.stopPropagation()}>
+                          <input
+                            autoFocus
+                            className="input py-1 text-sm"
+                            style={{ maxWidth: 200 }}
+                            placeholder="Company ka naam"
+                            value={renameValue}
+                            onChange={e => setRenameValue(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') saveRename(folder); if (e.key === 'Escape') cancelRename() }}
+                          />
+                          <button className="btn btn-sm" disabled={renaming} onClick={() => saveRename(folder)}>
+                            {renaming ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} />}
+                          </button>
+                          <button className="btn btn-sm" onClick={cancelRename}><X size={12} /></button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-1.5 min-w-0">
+                          <h3 className="font-display font-semibold text-sm truncate">{folder.groupName}</h3>
+                          <button
+                            className="shrink-0 opacity-60 hover:opacity-100"
+                            title="Naam badlo"
+                            onClick={e => { e.stopPropagation(); startRename(folder) }}
+                          >
+                            <Pencil size={12} />
+                          </button>
+                        </div>
+                      )}
                       <span className="text-xs text-haze-500">{folder.invoices.length} invoice{folder.invoices.length !== 1 ? 's' : ''}</span>
                     </div>
-                  </div>
-                  <div className="flex items-center gap-4 shrink-0">
+                  </button>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <button
+                      className="btn btn-sm"
+                      title="Excel mein download karo"
+                      onClick={() => downloadFolderExcel(folder)}
+                    >
+                      <FileSpreadsheet size={13} /> Excel
+                    </button>
                     <div className="text-right">
                       <div className="text-[10px] text-haze-500 uppercase tracking-wide">Total</div>
                       <Amount value={folder.total} />
                     </div>
                   </div>
-                </button>
+                </div>
 
                 {isOpen && (
                   <div style={{ borderTop: '1px solid #E3DFFA' }}>
+                    <div className="px-4 sm:px-5 pt-3">
+                      <div className="flex items-center gap-2 rounded-lg px-3 py-2" style={{ background: `${accent}0F` }}>
+                        <FolderIcon color={accent} size={20} open />
+                        <span className="text-xs font-medium" style={{ color: accent }}>Invoices</span>
+                      </div>
+                    </div>
                     <div className="flex items-center gap-2 px-4 sm:px-5 py-2.5" style={{ background: '#F7F5FE' }}>
                       <input type="checkbox" checked={allSelectedInFolder} onChange={() => toggleAllInFolder(folder.invoices)} />
                       <span className="text-xs text-haze-500">Select all in {folder.groupName}</span>

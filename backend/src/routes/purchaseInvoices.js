@@ -157,7 +157,7 @@ If a field is unclear, use null. Numbers must be plain numbers, no currency symb
 router.get('/', asyncHandler(async (req, res) => {
   const invoices = await prisma.purchaseInvoice.findMany({
     orderBy: { billDate: 'desc' },
-    include: { items: { include: { product: true } } }
+    include: { items: { include: { product: { include: { group: true } } } } }
   })
   res.json({ data: invoices })
 }))
@@ -166,7 +166,7 @@ router.get('/', asyncHandler(async (req, res) => {
 router.get('/:id', asyncHandler(async (req, res) => {
   const invoice = await prisma.purchaseInvoice.findUnique({
     where: { id: req.params.id },
-    include: { items: { include: { product: true } } }
+    include: { items: { include: { product: { include: { group: true } } } } }
   })
   if (!invoice) { res.status(404); throw new Error('Invoice not found') }
   res.json({ data: invoice })
@@ -233,7 +233,7 @@ router.post('/', asyncHandler(async (req, res) => {
 
   const fullInvoice = await prisma.purchaseInvoice.findUnique({
     where: { id: invoice.id },
-    include: { items: { include: { product: true } } }
+    include: { items: { include: { product: { include: { group: true } } } } }
   })
 
   res.status(201).json({ data: fullInvoice })
@@ -311,7 +311,7 @@ router.put('/:id', asyncHandler(async (req, res) => {
 
   const fullInvoice = await prisma.purchaseInvoice.findUnique({
     where: { id: invoice.id },
-    include: { items: { include: { product: true } } }
+    include: { items: { include: { product: { include: { group: true } } } } }
   })
 
   res.json({ data: fullInvoice })
