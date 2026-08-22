@@ -353,6 +353,9 @@ export default function Inventory() {
                 <label className="label">Margin %</label>
                 <input className="input" type="number" min={0} value={editFields.marginPercent}
                   onChange={e => setEditFields({ ...editFields, marginPercent: e.target.value })} />
+                <p className="text-[11px] text-haze-400 mt-1">
+                  {editFields.landingPriceWithGst ? 'Selling rate = Landing+GST + Margin' : 'Selling rate = Landing price + Margin'}
+                </p>
               </div>
             </div>
 

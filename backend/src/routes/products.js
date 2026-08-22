@@ -38,7 +38,11 @@ router.post('/', asyncHandler(async (req, res) => {
   if (!groupId) { res.status(400); throw new Error('groupId required') }
   assertNonNegative(res, req.body, ['costPrice', 'marginPercent', 'marginFlat', 'stockQty'])
 
-  const sellingPrice = calcSellingPrice(costPrice, marginPercent, marginFlat)
+  // Selling rate ka base: agar "Landing price + GST" diya hua hai to wahi use hoga,
+  // warna plain landing price (costPrice) se calculate hoga.
+  const gstBase = landingPriceWithGst !== undefined && landingPriceWithGst !== null && landingPriceWithGst !== ''
+    ? Number(landingPriceWithGst) : Number(costPrice) || 0
+  const sellingPrice = calcSellingPrice(gstBase, marginPercent, marginFlat)
 
   const product = await prisma.product.create({
     data: {
@@ -56,7 +60,7 @@ router.post('/', asyncHandler(async (req, res) => {
   res.status(201).json({ data: product })
 }))
 
-// PUT /api/products/:id  — margin change hone pe sellingPrice re-calculate hoga
+// PUT /api/products/:id  — margin ya landing+GST change hone pe sellingPrice re-calculate hoga
 router.put('/:id', asyncHandler(async (req, res) => {
   const { name, unit, costPrice, landingPriceWithGst, marginPercent, marginFlat, stockQty, groupId } = req.body
 
@@ -65,9 +69,15 @@ router.put('/:id', asyncHandler(async (req, res) => {
   assertNonNegative(res, req.body, ['costPrice', 'marginPercent', 'marginFlat', 'stockQty'])
 
   const finalCost = costPrice !== undefined ? Number(costPrice) : existing.costPrice
+  const finalLandingGst = landingPriceWithGst !== undefined
+    ? (landingPriceWithGst === '' || landingPriceWithGst === null ? null : Number(landingPriceWithGst))
+    : existing.landingPriceWithGst
   const finalMarginPercent = marginPercent !== undefined ? Number(marginPercent) : existing.marginPercent
   const finalMarginFlat = marginFlat !== undefined ? Number(marginFlat) : existing.marginFlat
-  const sellingPrice = calcSellingPrice(finalCost, finalMarginFlat ? null : finalMarginPercent, finalMarginFlat)
+
+  // Selling rate ka base: Landing price + GST agar maujood hai to wahi, warna plain landing price
+  const gstBase = finalLandingGst !== null && finalLandingGst !== undefined ? finalLandingGst : finalCost
+  const sellingPrice = calcSellingPrice(gstBase, finalMarginFlat ? null : finalMarginPercent, finalMarginFlat)
 
   const product = await prisma.product.update({
     where: { id: req.params.id },
@@ -76,7 +86,7 @@ router.put('/:id', asyncHandler(async (req, res) => {
       ...(groupId !== undefined ? { groupId } : {}),
       ...(unit !== undefined ? { unit } : {}),
       costPrice: finalCost,
-      ...(landingPriceWithGst !== undefined ? { landingPriceWithGst: landingPriceWithGst === '' || landingPriceWithGst === null ? null : Number(landingPriceWithGst) } : {}),
+      landingPriceWithGst: finalLandingGst,
       marginPercent: finalMarginPercent,
       marginFlat: finalMarginFlat,
       sellingPrice,
