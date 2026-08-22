@@ -18,6 +18,8 @@ export const getProductsApi = (groupId?: string, search?: string) =>
 export const createProductApi = (data: any) => api.post('/products', data).then(r => r.data.data)
 export const updateProductApi = (id: string, data: any) => api.put(`/products/${id}`, data).then(r => r.data.data)
 export const deleteProductApi = (id: string) => api.delete(`/products/${id}`)
+export const bulkDeleteProductsApi = (ids: string[]) =>
+  api.post('/products/bulk-delete', { ids }).then(r => r.data)
 
 // ---- Purchase Invoices ----
 export const scanPurchaseInvoiceApi = (base64: string, mimeType: string) =>

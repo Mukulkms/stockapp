@@ -31,9 +31,9 @@ router.get('/:id', asyncHandler(async (req, res) => {
   res.json({ data: product })
 }))
 
-// POST /api/products  { name, groupId, unit, costPrice, marginPercent, marginFlat, stockQty }
+// POST /api/products  { name, groupId, unit, costPrice, landingPriceWithGst, marginPercent, marginFlat, stockQty }
 router.post('/', asyncHandler(async (req, res) => {
-  const { name, groupId, unit, costPrice, marginPercent, marginFlat, stockQty } = req.body
+  const { name, groupId, unit, costPrice, landingPriceWithGst, marginPercent, marginFlat, stockQty } = req.body
   if (!name?.trim()) { res.status(400); throw new Error('Product name required') }
   if (!groupId) { res.status(400); throw new Error('groupId required') }
   assertNonNegative(res, req.body, ['costPrice', 'marginPercent', 'marginFlat', 'stockQty'])
@@ -46,6 +46,7 @@ router.post('/', asyncHandler(async (req, res) => {
       groupId,
       unit: unit || 'pcs',
       costPrice: Number(costPrice) || 0,
+      landingPriceWithGst: landingPriceWithGst !== undefined && landingPriceWithGst !== '' ? Number(landingPriceWithGst) : null,
       marginPercent: marginPercent !== undefined ? Number(marginPercent) : null,
       marginFlat: marginFlat !== undefined ? Number(marginFlat) : null,
       sellingPrice,
@@ -57,7 +58,7 @@ router.post('/', asyncHandler(async (req, res) => {
 
 // PUT /api/products/:id  — margin change hone pe sellingPrice re-calculate hoga
 router.put('/:id', asyncHandler(async (req, res) => {
-  const { name, unit, costPrice, marginPercent, marginFlat, stockQty, groupId } = req.body
+  const { name, unit, costPrice, landingPriceWithGst, marginPercent, marginFlat, stockQty, groupId } = req.body
 
   const existing = await prisma.product.findUnique({ where: { id: req.params.id } })
   if (!existing) { res.status(404); throw new Error('Product not found') }
@@ -75,6 +76,7 @@ router.put('/:id', asyncHandler(async (req, res) => {
       ...(groupId !== undefined ? { groupId } : {}),
       ...(unit !== undefined ? { unit } : {}),
       costPrice: finalCost,
+      ...(landingPriceWithGst !== undefined ? { landingPriceWithGst: landingPriceWithGst === '' || landingPriceWithGst === null ? null : Number(landingPriceWithGst) } : {}),
       marginPercent: finalMarginPercent,
       marginFlat: finalMarginFlat,
       sellingPrice,
@@ -82,6 +84,24 @@ router.put('/:id', asyncHandler(async (req, res) => {
     }
   })
   res.json({ data: product })
+}))
+
+// POST /api/products/bulk-delete  { ids: string[] }
+router.post('/bulk-delete', asyncHandler(async (req, res) => {
+  const { ids } = req.body
+  if (!Array.isArray(ids) || ids.length === 0) { res.status(400); throw new Error('Koi product select nahi kiya') }
+
+  let deletedCount = 0
+  const failed = []
+  for (const id of ids) {
+    try {
+      await prisma.product.delete({ where: { id } })
+      deletedCount++
+    } catch (err) {
+      failed.push(id)
+    }
+  }
+  res.json({ success: true, deletedCount, failedCount: failed.length })
 }))
 
 // DELETE /api/products/:id

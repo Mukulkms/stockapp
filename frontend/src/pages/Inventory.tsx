@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Plus, Pencil, Trash2, Check, X, Loader2 } from 'lucide-react'
+import { Plus, Pencil, Trash2, Check, X, Loader2, FileSpreadsheet } from 'lucide-react'
 import toast from 'react-hot-toast'
-import { getGroupsApi, createGroupApi, deleteGroupApi, getProductsApi, updateProductApi, deleteProductApi } from '../api/endpoints'
+import * as XLSX from 'xlsx'
+import { getGroupsApi, createGroupApi, deleteGroupApi, getProductsApi, updateProductApi, deleteProductApi, bulkDeleteProductsApi } from '../api/endpoints'
 import { BillingGroup, Product } from '../types'
 import Amount from '../components/Amount'
 import Pagination from '../components/Pagination'
@@ -28,6 +29,10 @@ export default function Inventory() {
   const [deleteGroupTarget, setDeleteGroupTarget] = useState<BillingGroup | null>(null)
   const [deletingGroup, setDeletingGroup] = useState(false)
 
+  const [selected, setSelected] = useState<Set<string>>(new Set())
+  const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
+  const [bulkDeleting, setBulkDeleting] = useState(false)
+
   useEffect(() => {
     getGroupsApi().then(gs => {
       setGroups(gs)
@@ -41,7 +46,7 @@ export default function Inventory() {
     getProductsApi(activeGroup).then(setProducts).finally(() => setLoading(false))
   }
 
-  useEffect(() => { setPage(1); loadProducts() }, [activeGroup])
+  useEffect(() => { setPage(1); setSelected(new Set()); loadProducts() }, [activeGroup])
 
   const handleCreateGroup = async () => {
     if (!newGroupName.trim()) { toast.error('Group name likho'); return }
@@ -80,6 +85,7 @@ export default function Inventory() {
       name: p.name,
       unit: p.unit,
       costPrice: p.costPrice,
+      landingPriceWithGst: p.landingPriceWithGst ?? '',
       marginPercent: p.marginPercent ?? 0,
       stockQty: p.stockQty
     })
@@ -95,6 +101,7 @@ export default function Inventory() {
         name: editFields.name.trim(),
         unit: editFields.unit || 'pcs',
         costPrice: Math.max(0, parseFloat(editFields.costPrice) || 0),
+        landingPriceWithGst: editFields.landingPriceWithGst === '' ? null : Math.max(0, parseFloat(editFields.landingPriceWithGst) || 0),
         marginPercent: Math.max(0, parseFloat(editFields.marginPercent) || 0),
         marginFlat: null,
         stockQty: Math.max(0, parseFloat(editFields.stockQty) || 0)
@@ -124,6 +131,60 @@ export default function Inventory() {
     }
   }
 
+  const toggleSelect = (id: string) => {
+    setSelected(prev => {
+      const next = new Set(prev)
+      next.has(id) ? next.delete(id) : next.add(id)
+      return next
+    })
+  }
+
+  const toggleSelectAllOnPage = () => {
+    const pageIds = pageItems.map(p => p.id)
+    const allSelected = pageIds.every(id => selected.has(id))
+    setSelected(prev => {
+      const next = new Set(prev)
+      pageIds.forEach(id => allSelected ? next.delete(id) : next.add(id))
+      return next
+    })
+  }
+
+  const confirmBulkDelete = async () => {
+    setBulkDeleting(true)
+    try {
+      const res = await bulkDeleteProductsApi(Array.from(selected))
+      toast.success(`${res.deletedCount} product delete ho gaye${res.failedCount ? `, ${res.failedCount} skip hue (invoice mein use ho chuke hain)` : ''}`)
+      setBulkDeleteOpen(false)
+      setSelected(new Set())
+      loadProducts()
+    } catch (e: any) {
+      toast.error(e?.response?.data?.message || 'Bulk delete nahi hua')
+    } finally {
+      setBulkDeleting(false)
+    }
+  }
+
+  const downloadInventoryExcel = () => {
+    if (products.length === 0) { toast.error('Is group mein koi product nahi hai'); return }
+    const rows = [...products]
+      .sort((a, b) => a.name.localeCompare(b.name))
+      .map(p => ({
+        Product: p.name,
+        Unit: p.unit,
+        'Landing Price (₹)': p.costPrice,
+        'Landing + GST (₹)': p.landingPriceWithGst ?? '',
+        'Selling Rate (₹)': p.sellingPrice,
+        'Stock Qty': p.stockQty
+      }))
+    const ws = XLSX.utils.json_to_sheet(rows)
+    ws['!cols'] = [{ wch: 28 }, { wch: 10 }, { wch: 16 }, { wch: 16 }, { wch: 16 }, { wch: 12 }]
+    const wb = XLSX.utils.book_new()
+    const groupName = groups.find(g => g.id === activeGroup)?.name || 'Inventory'
+    XLSX.utils.book_append_sheet(wb, ws, groupName.slice(0, 31))
+    XLSX.writeFile(wb, `${groupName.replace(/[^a-z0-9]+/gi, '_')}_stock_${new Date().toISOString().split('T')[0]}.xlsx`)
+    toast.success('Stock list Excel mein download ho gayi')
+  }
+
   const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE))
   const pageItems = products.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
@@ -137,6 +198,17 @@ export default function Inventory() {
         <button className="btn btn-accent" onClick={() => setShowNewGroup(true)}>
           <Plus size={14} /> New group
         </button>
+      </div>
+
+      <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+        <button className="btn btn-sm" onClick={downloadInventoryExcel}>
+          <FileSpreadsheet size={13} /> Stock Excel mein download karo
+        </button>
+        {selected.size > 0 && (
+          <button className="btn btn-sm" style={{ color: '#DC2626' }} onClick={() => setBulkDeleteOpen(true)}>
+            <Trash2 size={13} /> {selected.size} selected delete karo
+          </button>
+        )}
       </div>
 
       {showNewGroup && (
@@ -184,9 +256,17 @@ export default function Inventory() {
           <table className="w-full text-sm min-w-[760px]">
             <thead>
               <tr style={{ background: '#F5F3FF', borderBottom: '1px solid #E3DFFA' }}>
+                <th className="px-5 py-3">
+                  <input
+                    type="checkbox"
+                    checked={pageItems.length > 0 && pageItems.every(p => selected.has(p.id))}
+                    onChange={toggleSelectAllOnPage}
+                  />
+                </th>
                 <th className="text-left px-5 py-3 font-medium text-haze-500">Product</th>
                 <th className="text-left px-5 py-3 font-medium text-haze-500">Unit</th>
-                <th className="text-left px-5 py-3 font-medium text-haze-500">Cost price</th>
+                <th className="text-left px-5 py-3 font-medium text-haze-500">Landing price</th>
+                <th className="text-left px-5 py-3 font-medium text-haze-500">Landing price + GST</th>
                 <th className="text-left px-5 py-3 font-medium text-haze-500">Margin %</th>
                 <th className="text-left px-5 py-3 font-medium text-haze-500">Selling rate</th>
                 <th className="text-left px-5 py-3 font-medium text-haze-500">Stock</th>
@@ -196,9 +276,15 @@ export default function Inventory() {
             <tbody>
               {pageItems.map(p => (
                 <tr key={p.id} style={{ borderBottom: '1px solid #EDEAFB' }}>
+                  <td className="px-5 py-3">
+                    <input type="checkbox" checked={selected.has(p.id)} onChange={() => toggleSelect(p.id)} />
+                  </td>
                   <td className="px-5 py-3 font-medium">{p.name}</td>
                   <td className="px-5 py-3 text-haze-500">{p.unit}</td>
                   <td className="px-5 py-3"><Amount value={p.costPrice} /></td>
+                  <td className="px-5 py-3">
+                    {p.landingPriceWithGst != null ? <Amount value={p.landingPriceWithGst} /> : <span className="text-haze-400">—</span>}
+                  </td>
                   <td className="px-5 py-3">{p.marginPercent ?? 0}%</td>
                   <td className="px-5 py-3"><Amount value={p.sellingPrice} /></td>
                   <td className="px-5 py-3">
@@ -218,7 +304,7 @@ export default function Inventory() {
                 </tr>
               ))}
               {!loading && products.length === 0 && (
-                <tr><td colSpan={7} className="px-5 py-8 text-center text-haze-400 text-sm">
+                <tr><td colSpan={9} className="px-5 py-8 text-center text-haze-400 text-sm">
                   Is group mein koi product nahi hai. Purchase invoice scan karke add karo.
                 </td></tr>
               )}
@@ -254,9 +340,14 @@ export default function Inventory() {
                   onChange={e => setEditFields({ ...editFields, stockQty: e.target.value })} />
               </div>
               <div>
-                <label className="label">Cost price</label>
+                <label className="label">Landing price</label>
                 <input className="input" type="number" min={0} value={editFields.costPrice}
                   onChange={e => setEditFields({ ...editFields, costPrice: e.target.value })} />
+              </div>
+              <div>
+                <label className="label">Landing price + GST</label>
+                <input className="input" type="number" min={0} placeholder="e.g. 52.40" value={editFields.landingPriceWithGst}
+                  onChange={e => setEditFields({ ...editFields, landingPriceWithGst: e.target.value })} />
               </div>
               <div>
                 <label className="label">Margin %</label>
@@ -317,6 +408,30 @@ export default function Inventory() {
               >
                 {deletingGroup ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk delete confirm */}
+      {bulkDeleteOpen && (
+        <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ background: 'rgba(33,28,77,0.4)' }}>
+          <div className="card p-5 w-full max-w-sm" style={{ background: '#fff' }}>
+            <h3 className="font-display font-semibold text-base mb-2">{selected.size} products delete karein?</h3>
+            <p className="text-sm text-haze-500 mb-5">
+              Selected products permanently delete ho jayenge. Jo product kisi invoice mein already use ho chuka hai wo skip ho jayega.
+            </p>
+            <div className="flex gap-2 justify-end">
+              <button className="btn" onClick={() => setBulkDeleteOpen(false)} disabled={bulkDeleting}>Cancel</button>
+              <button
+                className="btn"
+                style={{ borderColor: '#DC2626', color: '#fff', background: '#DC2626' }}
+                onClick={confirmBulkDelete}
+                disabled={bulkDeleting}
+              >
+                {bulkDeleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+                Delete {selected.size}
               </button>
             </div>
           </div>

@@ -32,7 +32,8 @@ model Product {
   groupId       String
   group         BillingGroup @relation(fields: [groupId], references: [id])
   unit          String   @default("pcs")   // pcs, kg, mtr, box, ltr
-  costPrice     Float    @default(0)       // latest purchase cost
+  costPrice     Float    @default(0)       // "Landing price" — latest purchase cost
+  landingPriceWithGst Float?               // landing price + GST, manually entered/saved
   marginPercent Float?
   marginFlat    Float?
   sellingPrice  Float    @default(0)       // auto-calculated, stored for fast reads

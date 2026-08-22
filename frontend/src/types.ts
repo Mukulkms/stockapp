@@ -39,6 +39,7 @@ export interface Product {
   group?: BillingGroup
   unit: string
   costPrice: number
+  landingPriceWithGst: number | null
   marginPercent: number | null
   marginFlat: number | null
   sellingPrice: number
