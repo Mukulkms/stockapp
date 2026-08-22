@@ -96,6 +96,26 @@ router.put('/:id', asyncHandler(async (req, res) => {
   res.json({ data: product })
 }))
 
+// POST /api/products/recalculate-selling-prices?groupId=xxx
+// Purane products jinka sellingPrice purani formula se (ya bina Landing+GST ke) save
+// hua tha unhe naye formula se dobara calculate karta hai — bina har product ko
+// manually edit kiye.
+router.post('/recalculate-selling-prices', asyncHandler(async (req, res) => {
+  const { groupId } = req.body
+  const products = await prisma.product.findMany({ where: groupId ? { groupId } : {} })
+
+  let updated = 0
+  for (const p of products) {
+    const gstBase = p.landingPriceWithGst !== null && p.landingPriceWithGst !== undefined ? p.landingPriceWithGst : p.costPrice
+    const sellingPrice = calcSellingPrice(gstBase, p.marginFlat ? null : p.marginPercent, p.marginFlat)
+    if (sellingPrice !== p.sellingPrice) {
+      await prisma.product.update({ where: { id: p.id }, data: { sellingPrice } })
+      updated++
+    }
+  }
+  res.json({ success: true, checked: products.length, updated })
+}))
+
 // POST /api/products/bulk-delete  { ids: string[] }
 router.post('/bulk-delete', asyncHandler(async (req, res) => {
   const { ids } = req.body

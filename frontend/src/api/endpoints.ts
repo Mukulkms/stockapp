@@ -20,6 +20,8 @@ export const updateProductApi = (id: string, data: any) => api.put(`/products/${
 export const deleteProductApi = (id: string) => api.delete(`/products/${id}`)
 export const bulkDeleteProductsApi = (ids: string[]) =>
   api.post('/products/bulk-delete', { ids }).then(r => r.data)
+export const recalculateSellingPricesApi = (groupId?: string) =>
+  api.post('/products/recalculate-selling-prices', { groupId }).then(r => r.data)
 
 // ---- Purchase Invoices ----
 export const scanPurchaseInvoiceApi = (base64: string, mimeType: string) =>

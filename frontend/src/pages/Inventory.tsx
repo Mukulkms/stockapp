@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Plus, Pencil, Trash2, Check, X, Loader2, FileSpreadsheet } from 'lucide-react'
+import { Plus, Pencil, Trash2, Check, X, Loader2, FileSpreadsheet, RefreshCw } from 'lucide-react'
 import toast from 'react-hot-toast'
 import * as XLSX from 'xlsx'
-import { getGroupsApi, createGroupApi, deleteGroupApi, getProductsApi, updateProductApi, deleteProductApi, bulkDeleteProductsApi } from '../api/endpoints'
+import { getGroupsApi, createGroupApi, deleteGroupApi, getProductsApi, updateProductApi, deleteProductApi, bulkDeleteProductsApi, recalculateSellingPricesApi } from '../api/endpoints'
 import { BillingGroup, Product } from '../types'
 import Amount from '../components/Amount'
 import Pagination from '../components/Pagination'
@@ -32,6 +32,7 @@ export default function Inventory() {
   const [selected, setSelected] = useState<Set<string>>(new Set())
   const [bulkDeleteOpen, setBulkDeleteOpen] = useState(false)
   const [bulkDeleting, setBulkDeleting] = useState(false)
+  const [recalculating, setRecalculating] = useState(false)
 
   useEffect(() => {
     getGroupsApi().then(gs => {
@@ -185,6 +186,19 @@ export default function Inventory() {
     toast.success('Stock list Excel mein download ho gayi')
   }
 
+  const recalcSellingPrices = async () => {
+    setRecalculating(true)
+    try {
+      const res = await recalculateSellingPricesApi(activeGroup)
+      toast.success(`${res.updated} product ke selling rate update hue`)
+      loadProducts()
+    } catch (e: any) {
+      toast.error('Recalculate nahi hua')
+    } finally {
+      setRecalculating(false)
+    }
+  }
+
   const totalPages = Math.max(1, Math.ceil(products.length / PAGE_SIZE))
   const pageItems = products.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
@@ -203,6 +217,10 @@ export default function Inventory() {
       <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
         <button className="btn btn-sm" onClick={downloadInventoryExcel}>
           <FileSpreadsheet size={13} /> Stock Excel mein download karo
+        </button>
+        <button className="btn btn-sm" onClick={recalcSellingPrices} disabled={recalculating}>
+          {recalculating ? <Loader2 size={13} className="animate-spin" /> : <RefreshCw size={13} />}
+          Selling rate dobara calculate karo
         </button>
         {selected.size > 0 && (
           <button className="btn btn-sm" style={{ color: '#DC2626' }} onClick={() => setBulkDeleteOpen(true)}>
