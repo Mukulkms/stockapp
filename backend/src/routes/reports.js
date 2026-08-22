@@ -16,11 +16,13 @@ router.get('/profit-loss', asyncHandler(async (req, res) => {
 
   const groups = await prisma.billingGroup.findMany({ orderBy: { name: 'asc' } })
 
-  // Purchase invoice items grouped by product's group — purchase ka "actual bill amount"
-  // proportionally item-level costPrice*qty ke basis pe company-wise split hota hai
-  const purchaseItems = await prisma.purchaseInvoiceItem.findMany({
-    where: hasDateFilter ? { purchaseInvoice: { billDate: dateFilter } } : {},
-    select: { qty: true, costPrice: true, product: { select: { groupId: true } } }
+  // Purchase ka "actual bill amount" — same logic jo Past Invoices folder view use karta
+  // hai: har invoice ka totalAmount (real printed/edited amount) uske pehle item ke
+  // product ki company/group ke against jodo. qty*costPrice se nahi (wo sirf subtotal
+  // hai, discount/tax ke baad ka final totalAmount alag ho sakta hai).
+  const purchaseInvoices = await prisma.purchaseInvoice.findMany({
+    where: hasDateFilter ? { billDate: dateFilter } : {},
+    include: { items: { take: 1, include: { product: { select: { groupId: true } } } } }
   })
 
   const salesItems = await prisma.salesInvoiceItem.findMany({
@@ -54,10 +56,10 @@ router.get('/profit-loss', asyncHandler(async (req, res) => {
   })
   let hasUnassigned = false
 
-  for (const it of purchaseItems) {
-    const gid = it.product?.groupId
+  for (const inv of purchaseInvoices) {
+    const gid = inv.items?.[0]?.product?.groupId
     if (!gid || !byGroup[gid]) { hasUnassigned = true; continue }
-    byGroup[gid].totalPurchase += it.qty * it.costPrice
+    byGroup[gid].totalPurchase += inv.totalAmount
   }
 
   for (const it of salesItems) {
