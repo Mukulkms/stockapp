@@ -19,7 +19,6 @@ model BillingGroup {
   id        String    @id @default(cuid())
   name      String    @unique   // "Pulse", "Toffee", "MTR"
   products  Product[]
-  expenses  Expense[]
   monthlySales MonthlySales[]
   cheques   Cheque[]
   profitCalculations ProfitCalculation[]
@@ -111,22 +110,6 @@ model SalesInvoiceItem {
 
   @@index([salesInvoiceId])
   @@index([productId])
-}
-
-model Expense {
-  id          String   @id @default(cuid())
-  title       String
-  category    String   @default("general")   // rent, salary, transport, misc, etc.
-  amount      Float
-  groupId     String?                         // optional: tie an expense to a specific company/group
-  group       BillingGroup? @relation(fields: [groupId], references: [id])
-  note        String?
-  expenseDate DateTime @default(now())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-
-  @@index([groupId])
-  @@index([expenseDate])
 }
 
 model MonthlySales {

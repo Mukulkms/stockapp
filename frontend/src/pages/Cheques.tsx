@@ -15,7 +15,7 @@ function colorForGroup(groupId: string, allIds: string[]) {
 }
 
 const STATUS_LABEL: Record<string, string> = { pending: 'Pending', cleared: 'Cleared', bounced: 'Bounced' }
-const STATUS_COLOR: Record<string, string> = { pending: '#D97706', cleared: '#0E7C6B', bounced: '#DC2626' }
+const STATUS_COLOR: Record<string, string> = { pending: '#D97706', cleared: '#0D9488', bounced: '#DC2626' }
 
 const emptyForm = { groupId: '', chequeNumber: '', bankName: '', amount: '', chequeDate: new Date().toISOString().split('T')[0], status: 'pending', note: '' }
 

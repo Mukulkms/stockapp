@@ -96,35 +96,18 @@ export interface SalesInvoice {
   items: SalesInvoiceItem[]
 }
 
-export interface Expense {
-  id: string
-  title: string
-  category: string
-  amount: number
-  groupId?: string | null
-  group?: BillingGroup | null
-  note?: string
-  expenseDate: string
-}
-
 export interface CompanyProfitLoss {
   groupId: string | null
   groupName: string
   totalPurchase: number
   totalSales: number
-  costOfGoodsSold: number
-  expenses: number
-  grossProfit: number
   netProfit: number
-  simpleProfit: number
-  simpleNetProfit: number
 }
 
 export interface MonthlyBreakdownRow {
   year: number
   month: number
   purchaseTotal: number
-  expensesTotal: number
   salesAmount: number
   hasSalesEntry: boolean
   netProfit: number
@@ -139,12 +122,6 @@ export interface ProfitLossReport {
   summary: {
     totalPurchase: number
     totalSales: number
-    costOfGoodsSold: number
-    expenses: number
-    grossProfit: number
     netProfit: number
-    generalExpenses: number
-    simpleProfit: number
-    simpleNetProfit: number
   }
 }

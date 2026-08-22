@@ -18,6 +18,18 @@ function monthLabel(m: string) {
   return new Date(y, mo - 1, 1).toLocaleDateString('en-IN', { month: 'short', year: 'numeric' })
 }
 
+// "2026-07" se "2026-08" tak ka poora din-wise date range: "1 Jul 2026 – 31 Aug 2026"
+// (kis din se kis din tak ki sales is period mein daali gayi hai, wahi dikhata hai)
+function fullRangeLabel(fromMonth: string, toMonth: string) {
+  const [fy, fm] = fromMonth.split('-').map(Number)
+  const [ty, tm] = toMonth.split('-').map(Number)
+  const daysInMonth = new Date(ty, tm, 0).getDate()
+  const fmt = (d: Date) => d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+  const start = fmt(new Date(fy, fm - 1, 1))
+  const end = fmt(new Date(ty, tm - 1, daysInMonth))
+  return `${start} – ${end}`
+}
+
 // Ek company/group ke liye: kisi bhi period (ek mahina, kayi mahine, ya poora saal)
 // ki total sale + us period mein diye gaye cheques ka total automatically jod ke
 // laata hai. Bacha hua stock value tum khud daalte ho. In teenon se net profit
@@ -122,7 +134,7 @@ export default function ProfitCalculator({ groupId }: { groupId: string }) {
   }
 
   return (
-    <div className="pt-3 mt-3" style={{ borderTop: '1px dashed rgba(226,229,237,0.9)' }}>
+    <div className="pt-3 mt-3" style={{ borderTop: '1px dashed rgba(227,223,250,0.9)' }}>
       <button className="btn btn-sm w-full justify-center" onClick={() => setOpen(o => !o)}>
         {open ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
         <Calculator size={13} />
@@ -159,7 +171,7 @@ export default function ProfitCalculator({ groupId }: { groupId: string }) {
           </div>
 
           {fetched && (
-            <div className="rounded-lg p-3 space-y-2.5" style={{ background: '#F8F9FC' }}>
+            <div className="rounded-lg p-3 space-y-2.5" style={{ background: '#F7F5FE' }}>
               <div className="grid grid-cols-2 gap-2.5">
                 <div>
                   <label className="label mb-1">Total sale ({periodType === 'monthly' ? monthLabel(fromMonth) : `${monthLabel(fromMonth)} – ${monthLabel(effectiveToMonth)}`})</label>
@@ -202,15 +214,16 @@ export default function ProfitCalculator({ groupId }: { groupId: string }) {
                 {history.map(h => {
                   const hProfit = h.netProfit >= 0
                   return (
-                    <div key={h.id} className="flex items-center justify-between rounded-lg px-2.5 py-2 text-xs" style={{ background: '#F8F9FC' }}>
+                    <div key={h.id} className="flex items-center justify-between rounded-lg px-2.5 py-2 text-xs" style={{ background: '#F7F5FE' }}>
                       <div>
-                        <div className="font-medium" style={{ color: '#1B2540' }}>
+                        <div className="font-medium" style={{ color: '#211C4D' }}>
                           {monthLabel(h.fromMonth)}{h.fromMonth !== h.toMonth ? ` – ${monthLabel(h.toMonth)}` : ''}
                         </div>
+                        <div className="text-haze-500 text-[10px] mb-0.5">{fullRangeLabel(h.fromMonth, h.toMonth)}</div>
                         <div className="text-haze-500">Sale <Amount value={h.totalSales} /> · Cheque <Amount value={h.totalCheques} /> · Stock <Amount value={h.stockValue} /></div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span style={{ color: hProfit ? '#0E7C6B' : '#DC2626' }} className="font-medium">
+                        <span style={{ color: hProfit ? '#0D9488' : '#DC2626' }} className="font-medium">
                           {!hProfit ? '-' : ''}₹{Math.abs(h.netProfit).toLocaleString('en-IN')}
                         </span>
                         <button className="opacity-50 hover:opacity-100" onClick={() => removeCalc(h.id)}><Trash2 size={12} /></button>

@@ -39,11 +39,9 @@ export const bulkDeletePurchaseInvoicesApi = (ids: string[], revertStock = false
 export const getProfitLossApi = (from?: string, to?: string) =>
   api.get('/reports/profit-loss', { params: { from, to } }).then(r => r.data.data)
 
-// ---- Monthly Sales (manual entry, per company) ----
+// ---- Monthly Sales (auto purchase breakdown per company, used by Profit Calculator) ----
 export const getMonthlyBreakdownApi = (groupId: string) =>
   api.get(`/monthly-sales/${groupId}`).then(r => r.data.data)
-export const saveMonthlySalesApi = (data: { groupId: string; year: number; month: number; salesAmount: number; note?: string }) =>
-  api.post('/monthly-sales', data).then(r => r.data.data)
 
 // ---- Cheques ----
 export const getChequesApi = () => api.get('/cheques').then(r => r.data.data)
