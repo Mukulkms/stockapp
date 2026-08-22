@@ -44,6 +44,7 @@ export interface Product {
   marginFlat: number | null
   sellingPrice: number
   stockQty: number
+  isActive?: boolean
 }
 
 export interface PurchaseInvoiceItem {

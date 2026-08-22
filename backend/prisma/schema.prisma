@@ -34,6 +34,7 @@ model Product {
   unit          String   @default("pcs")   // pcs, kg, mtr, box, ltr
   costPrice     Float    @default(0)       // "Landing price" — latest purchase cost
   landingPriceWithGst Float?               // landing price + GST, manually entered/saved
+  isActive      Boolean  @default(true)    // false = "deleted" from inventory, but kept for old invoice history
   marginPercent Float?
   marginFlat    Float?
   sellingPrice  Float    @default(0)       // auto-calculated, stored for fast reads

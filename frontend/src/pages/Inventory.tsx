@@ -121,8 +121,8 @@ export default function Inventory() {
     if (!deleteTarget) return
     setDeleting(true)
     try {
-      await deleteProductApi(deleteTarget.id)
-      toast.success('Product delete ho gaya')
+      const res: any = await deleteProductApi(deleteTarget.id)
+      toast.success(res?.data?.archived ? 'Product remove ho gaya (purani invoices ke liye history safe rakhi hai)' : 'Product delete ho gaya')
       setDeleteTarget(null)
       setProducts(prev => prev.filter(p => p.id !== deleteTarget.id))
     } catch (e: any) {
@@ -154,7 +154,11 @@ export default function Inventory() {
     setBulkDeleting(true)
     try {
       const res = await bulkDeleteProductsApi(Array.from(selected))
-      toast.success(`${res.deletedCount} product delete ho gaye${res.failedCount ? `, ${res.failedCount} skip hue (invoice mein use ho chuke hain)` : ''}`)
+      const parts = []
+      if (res.deletedCount) parts.push(`${res.deletedCount} delete`)
+      if (res.archivedCount) parts.push(`${res.archivedCount} remove (history safe)`)
+      if (res.failedCount) parts.push(`${res.failedCount} fail`)
+      toast.success(parts.join(', ') + ' ho gaye')
       setBulkDeleteOpen(false)
       setSelected(new Set())
       loadProducts()
@@ -394,7 +398,7 @@ export default function Inventory() {
           <div className="card p-5 w-full max-w-sm" style={{ background: '#fff' }}>
             <h3 className="font-display font-semibold text-base mb-2">Product delete karein?</h3>
             <p className="text-sm text-haze-500 mb-5">
-              "{deleteTarget.name}" permanently delete ho jayega. Agar yeh product kisi purchase/sales invoice mein use ho chuka hai to delete fail hoga.
+              "{deleteTarget.name}" Inventory se hamesha ke liye hat jayega. Agar yeh kisi purani invoice mein use ho chuka hai, to wo billing history ke liye safe rakha jayega (bas list mein nahi dikhega).
             </p>
             <div className="flex gap-2 justify-end">
               <button className="btn" onClick={() => setDeleteTarget(null)} disabled={deleting}>Cancel</button>
@@ -441,7 +445,7 @@ export default function Inventory() {
           <div className="card p-5 w-full max-w-sm" style={{ background: '#fff' }}>
             <h3 className="font-display font-semibold text-base mb-2">{selected.size} products delete karein?</h3>
             <p className="text-sm text-haze-500 mb-5">
-              Selected products permanently delete ho jayenge. Jo product kisi invoice mein already use ho chuka hai wo skip ho jayega.
+              Selected products Inventory se hamesha ke liye hat jayenge. Jo product purani invoices mein use ho chuka hai uski billing history safe rakhi jayegi (bas list mein nahi dikhega).
             </p>
             <div className="flex gap-2 justify-end">
               <button className="btn" onClick={() => setBulkDeleteOpen(false)} disabled={bulkDeleting}>Cancel</button>

@@ -10,6 +10,7 @@ const router = express.Router()
 router.get('/', asyncHandler(async (req, res) => {
   const { groupId, search } = req.query
   const where = {
+    isActive: true,
     ...(groupId ? { groupId } : {}),
     ...(search ? { name: { contains: search, mode: 'insensitive' } } : {})
   }
@@ -117,33 +118,49 @@ router.post('/recalculate-selling-prices', asyncHandler(async (req, res) => {
 }))
 
 // POST /api/products/bulk-delete  { ids: string[] }
+// Agar product kisi invoice mein use ho chuka hai to hard-delete fail hoga — us
+// case mein isActive=false karke "archive" kar dete hain (Inventory se hat jayega,
+// purani invoices/reports safe rahenge). User ko yeh dono hi "delete ho gaya" jaisa
+// lagega.
 router.post('/bulk-delete', asyncHandler(async (req, res) => {
   const { ids } = req.body
   if (!Array.isArray(ids) || ids.length === 0) { res.status(400); throw new Error('Koi product select nahi kiya') }
 
   let deletedCount = 0
+  let archivedCount = 0
   const failed = []
   for (const id of ids) {
     try {
       await prisma.product.delete({ where: { id } })
       deletedCount++
     } catch (err) {
-      failed.push(id)
+      if (err.code === 'P2003') {
+        try {
+          await prisma.product.update({ where: { id }, data: { isActive: false } })
+          archivedCount++
+        } catch {
+          failed.push(id)
+        }
+      } else {
+        failed.push(id)
+      }
     }
   }
-  res.json({ success: true, deletedCount, failedCount: failed.length })
+  res.json({ success: true, deletedCount, archivedCount, failedCount: failed.length })
 }))
 
 // DELETE /api/products/:id
 router.delete('/:id', asyncHandler(async (req, res) => {
   try {
     await prisma.product.delete({ where: { id: req.params.id } })
-    res.json({ success: true })
+    res.json({ success: true, archived: false })
   } catch (err) {
     if (err.code === 'P2025') { res.status(404); throw new Error('Product not found') }
     if (err.code === 'P2003') {
-      res.status(409)
-      throw new Error('Yeh product kisi purchase ya sales invoice mein already use ho chuka hai, isliye delete nahi kar sakte. Pehle wo invoices delete karo, ya stock 0 kar do.')
+      // Purane invoices mein reference hai — hard delete se billing history toot
+      // jaati, isliye product ko archive kar dete hain (Inventory se hamesha ke liye hat jayega)
+      await prisma.product.update({ where: { id: req.params.id }, data: { isActive: false } })
+      return res.json({ success: true, archived: true })
     }
     throw err
   }
